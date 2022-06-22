@@ -1180,10 +1180,10 @@ class disposisiController extends Controller
         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Hapus Disposisi Surat Dari Luar Rumah Sakit '.$query_first->no_surat.'');
 
         if ($delete) {
-                Alert::success('Berhasil...','Disposisi Berhasil Dihapus');
+                Alert::success('Berhasil...','Disposisi Berhasil DiHapus');
                 return back();
             }else {
-                Alert::error('Gagal...', 'Disposisi Gagal Dihapus');
+                Alert::error('Gagal...', 'Disposisi Gagal DiHapus');
                 return back();
             }
     }
