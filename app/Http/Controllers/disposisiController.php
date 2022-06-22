@@ -1235,10 +1235,10 @@ class disposisiController extends Controller
         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Hapus Forward Disposisi Memo Intern '.$query_nosurat->no_surat.'');
       
         if ($queryhapus) {
-            Alert::success('Berhasil...','Forward Disposisi Berhasil Dihapus');
+            Alert::success('Berhasil...','Forward Disposisi Berhasil DiHapus');
             return back();
         }else {
-            Alert::error('Gagal...', 'Forward Disposisi Gagal Dihapus');
+            Alert::error('Gagal...', 'Forward Disposisi Gagal DiHapus');
             return back();
         }
     }
