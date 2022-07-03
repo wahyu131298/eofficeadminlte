@@ -25,7 +25,7 @@ use Milon\Barcode\DNS2D;
 
 class memoController extends Controller
 {
-    
+    //Menamilkan Form Create Memo
     public function index(Request $request)
     {
         $setting = setting::first();
@@ -46,7 +46,7 @@ class memoController extends Controller
         ];
         return view('memo2.creatememo',$data2);
     }
-
+    //Proses Insert Memo (Create Memo)
     public function insert(Request $request)
     {
         $kode_memo = IdGenerator::generate(['table' => 'tb_memo','field' => 'id_memo','length' => 6, 'prefix' => date('y')]);
@@ -256,6 +256,8 @@ class memoController extends Controller
         
             
     }
+
+    //Menampilkan Tabel Memo Masuk
     public function memoMasuk(Request $request)
     {
         //'tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id'
@@ -288,6 +290,8 @@ class memoController extends Controller
         $data = ['memomasuk' => $query_memomasuk, 'logo' => $setting];
         return view('memo2.masuk.view',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
+
+    //Menamilkan Tabel Memo Keluar
     public function memoKeluar(Request $request)
     {
         $pagination = 5;
@@ -313,6 +317,8 @@ class memoController extends Controller
         $data = ['memokeluar' => $query_keluar, 'logo' => $setting];
         return view('memo2.keluar.view',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
+
+    //Melihat Detail Memo
     public function detailMemo(Request $request, $id)
     {
         $pagination = 5;
@@ -347,7 +353,8 @@ class memoController extends Controller
         ];
         return view('memo2.keluar.detail',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
-   
+
+    //Melihat Tabel Konfirmasi Memo
     public function konfirm(Request $request)
     {
         $pagination = 5;
@@ -366,6 +373,8 @@ class memoController extends Controller
         $data = ['konfirm' => $query_konfirm, 'logo' => $setting];
         return view('memo2.korfirmasi',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
+
+    //Proses Menyetujui Memo oleh KABAG
     public function accMemo($id)
     {
         $nama = Auth::user()->Nama;
@@ -428,15 +437,24 @@ class memoController extends Controller
             return back();
         }
     }
+    //Menampilkan Modal Alasan Ditolak
+    public function view_modal_tolak($id)
+    {
+        $memoid = memoModel::where('id_memo',$id)->first();
+        $data = ['data' => $memoid];
+        return view('memo2.view-model-tolak',$data);
+    }
+    //Proses Penolakan Memo
     public function tolak(Request $request)
     {
         $nama = Auth::user()->Nama;
         $query_jabatan = Auth::user()->jabatan_id;
-        $memo = memoModel::find($request->input('nomemo'));
-        $catatan = $request->input('catatan');
         $today = date('Y-m-d');
         $jam = date('G:i:s');
-        $query_acc = memoModel::where('id_memo',$request->input('nomemo'))
+
+        $memo = memoModel::find($request->input('nomemo'));
+        $catatan = $request->input('catatan');
+        $tolak = memoModel::where('id_memo',$request->input('nomemo'))
             ->update([
            'tgl_konfirm'=> $today,
            'status_konfirm'=> '3',
@@ -447,9 +465,8 @@ class memoController extends Controller
         $namajabatan = Jabatan::where('id',$query_jabatan)->first();        
         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Menolak Memo '. $memo->no_surat.'');
         
-       
-        if ($query_acc) {
-            Alert::success('Ditolak...','Memo Telah Ditolak');
+        if ($tolak) {
+            Alert::success('Berhasil...','Memo Berhasil Telah Ditolak');
             return back();
         }
     }
@@ -539,13 +556,12 @@ class memoController extends Controller
         $pdf = PDF::loadview('memo2.memopdf.konfirmasi_pdf',['konfir1'=>$query_view,'konfir2'=>$query_view3,'title' => "Memo $judul"]);
         return $pdf->stream("Memo-$judul.pdf");
     }
+    //Hapus Memo
     public function hapus($id)
     {
         $nama = Auth::user()->Nama;
         $jabatanid = Auth::user()->jabatan_id;
-        $today = date('Y-m-d');
-        $jam = date('G:i:s');
-
+      
         $query_first= memoModel::where('id_memo',$id)->first();
         File::delete(public_path('file/lampiran/').$query_first->lampiran);
         $query = memoModel::where('id_memo',$id)->delete();
@@ -553,8 +569,6 @@ class memoController extends Controller
          //Membuat Log Baru 
          $namajabatan = Jabatan::where('id',$jabatanid)->first();        
          \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Hapus Memo '. $query_first->no_surat.'');
-
-      
 
         if ($query) {
             Alert::success('Berhasil...','Memo Berhasil Dihapus');
@@ -564,16 +578,20 @@ class memoController extends Controller
             return back();  
         }
     }
-
+    //Menampilkan Modal Notulen
+    public function viewmodal($id)
+    {
+        $memoid = memoModel::where('id_memo',$id)->first();
+        $data = ['data' => $memoid];
+        return view('memo2.keluar.modal-notulen', $data);
+    }
+    //Proses Insert Notulen
     public function createnotulen(Request $request)
     {
         $nama = Auth::user()->Nama;
         $jabatanid = Auth::user()->jabatan_id;
         $memo = $request->input('nomemo');
-        $today = date('Y-m-d');
-        $jam = date('G:i:s');
-
-
+      
         $insert_notulen = Notulen::create([
             'id_memo_not' => $request->input('idmemo'),
             'isi' => $request->input('catatan')
@@ -584,41 +602,57 @@ class memoController extends Controller
         $namajabatan = Jabatan::where('id',$jabatanid)->first();        
         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Membuat Notulen Memo '. $memo.'');
     }
-    
-    
+    //Menamilkan Modal Edit Notulen
+    public function vieweditmodal($id)
+    {
+       $memoid = Notulen::where('id_memo_not',$id)->first();
+
+       $nomor_memo = memoModel::where('id_memo',$memoid->id_memo_not)->first();
+
+       $nomemo =  $nomor_memo->no_surat;
+
+       $data = ['data' => $memoid, 'nomemo' => $nomemo];
+       return view('memo2.keluar.modal-edit-notulen', $data);
+
+    }
+    //Proses Update Notulen
     public function updatenotulen(Request $request)
     {
         $nama = Auth::user()->Nama;
         $jabatanid = Auth::user()->jabatan_id;
         $memo = $request->input('nomemo2');
-        $today = date('Y-m-d');
-        $jam = date('G:i:s');
-
 
         $update_notulen = Notulen::where('id_memo_not',$request->input('idmemo2'))
-        ->update([
-            'isi' => $request->input('catatan2')
-        ]);
+                                ->update([
+                                    'isi' => $request->input('catatan2')
+                                ]);
 
         //Membuat Log Baru 
         $namajabatan = Jabatan::where('id',$jabatanid)->first();        
         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Edit Notulen Memo '. $memo.'');
 
     }
+    //Menampilkan Lihat Notulen
+    public function lihatnotulen($id)
+    {
+        $memoid = Notulen::where('id_memo_not',$id)->first();
+ 
+        $data = ['data' => $memoid];
+        return view('memo2.masuk.modal-lihat-notulen', $data);
+    }
+
+    //Hapus Notulen
     public function hapusnotulen(Request $request, $id)
     {
 
         try {
            //Hapus NOtulen
         $del = Notulen::where('id_memo_not',$id)->delete();
-        
-
         $nama = Auth::user()->Nama;
         $jabatanid = Auth::user()->jabatan_id;
         $memo = memoModel::where('id_memo',$id)->first();
         $resultmemo = $memo->no_surat;
-        $today = date('Y-m-d');
-        $jam = date('G:i:s');
+      
         //Membuat Log Baru 
         $namajabatan = Jabatan::where('id',$jabatanid)->first();        
         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Hapus Notulen Memo '. $resultmemo.'');
@@ -631,6 +665,8 @@ class memoController extends Controller
         }
         
     }
+
+    //Tracking Memo
     public function trackingmemo(Request $request, $id)
     {
         $pagination = 5;
