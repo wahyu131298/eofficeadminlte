@@ -18,16 +18,15 @@
           <form id="addjabatan">
               @csrf
               <div class="modal-body">
-                     
-                      <div class="form-group">
-                          <label for="kode" class="col-form-label">Kode Jabatan</label>
-                          <input type="text" class="form-control" name="kode" value="{{$kode}}" readonly>
-                      </div>
-                      <div class="form-group">
-                          <label for="jabatan" class="col-form-label">Jabatan</label>
-                          <input type="text" class="form-control"  name="jabatan" required>
-                      </div>
-                      
+                <!--Modal Body-->    
+                <div class="form-group">
+                    <label for="kode" class="col-form-label">Kode Jabatan</label>
+                    <input type="text" class="form-control" name="kode" value="{{$kode}}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="jabatan" class="col-form-label">Jabatan</label>
+                    <input type="text" class="form-control"  name="jabatan" required>
+                </div>      
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -49,20 +48,10 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-          <form id="editjabatan">
+          <form id="editjabatan" method="POST" action="">
           @csrf
-              {{ method_field('PUT')}}
               <div class="modal-body">
-              
-                      <div class="form-group">
-                          <label for="kode" class="col-form-label">Kode Jabatan</label>
-                          <input type="text" class="form-control" id="kode" name="kode" readonly>
-                      </div>
-                      <div class="form-group">
-                          <label for="jabatan" class="col-form-label">Jabatan</label>
-                          <input type="text" class="form-control" id="jabatan" name="jabatan" required>
-                      </div>
-                      
+                <!--Modal Body-->
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -116,7 +105,7 @@
                             <td>{{ $jab->id}}</td>
                             <td>{{ $jab->jabatan}}</td>
                             <td>  
-                                <a class="btn btn-success editbtn" href="#">
+                                <a data-id="{{ $jab->id}}" class="btn btn-success editbtn" href="#">
                                     <i class="fas fa-pen"></i>
                                 </a>     
                                 <a class="btn btn-danger hapusbtn" href="/jabatan/hapus/{{$jab->id}}">
@@ -158,8 +147,6 @@
 <script>
     //ADD Jabatan
     $(document).ready(function(){
-        
-         
         $('#addjabatan').on('submit', function(e){
             e.preventDefault();
             $.ajax({
@@ -195,15 +182,20 @@
         }); 
     //edit
         $('table').on('click','.editbtn',function(){
-            
-            $('#editJabatanmodal').modal('show');
-            $tr = $(this).closest('tr');
-            var data = $tr.children("td").map(function(){
-                return $(this).text();
-            }).get();
-            console.log(data);
-            $('#kode').val(data[1]);
-            $('#jabatan').val(data[2]);
+            //console.log($(this).data('id'))
+
+            let idjabatan = $(this).data('id')
+            $.ajax({
+                url : `/form/jabatan/${idjabatan}`,
+                method : 'GET',
+                success : function (data) {
+                    $('#editJabatanmodal').find('.modal-body').html(data);
+                    $('#editJabatanmodal').modal('show');
+                },
+                error : function (error) { 
+                    console.log(error)
+                }    
+            })
         });
     
         //Update
