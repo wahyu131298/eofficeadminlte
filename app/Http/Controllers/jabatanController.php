@@ -10,10 +10,7 @@ use Alert;
 use App;
 class jabatanController extends Controller
 {
-    // public function index()
-    // {
-    //     return view('jabatan.jabatan');
-    // }
+
     public function list(Request $request)
     {
         $setting = setting::first();
@@ -24,7 +21,12 @@ class jabatanController extends Controller
         
         return view('jabatan2.listjabatan',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
-    
+    public function view_modal_jabatan($id)
+    {
+        $jabatanid = Jabatan::where('id',$id)->first();
+        $data = ['jabatan' => $jabatanid];
+        return view('jabatan2.modal-edit-jabatan',$data);
+    }
     public function insert(Request $request)
     {
         $validated = $request->validate([
