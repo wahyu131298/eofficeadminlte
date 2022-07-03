@@ -12,16 +12,9 @@
               <span aria-hidden="true">&times;</span>
               </button>
           </div>
-          <form id="tolak">
-          
+          <form id="tolak" method="POST" action="/memo/tolak">
+            @csrf
               <div class="modal-body">
-              @csrf
-              {{ method_field('PUT')}}
-                      <input type="hidden" id="nomemo" name="nomemo">
-                      <div class="form-group">
-                          <label for="catatan" class="col-form-label">Alasan Memo Ditolak</label>
-                          <textarea class="form-control"  name="catatan" required></textarea>
-                      </div>
                       
               </div>
               <div class="modal-footer">
@@ -90,7 +83,7 @@
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" href="/konfirmasi-memo/view/{{$item->id_memo}}" target="_blank">Lihat</a>
                                     <a class="dropdown-item konfirm" href="/memo/setuju/{{$item->id_memo}}">Setuju</a>
-                                    <a class="dropdown-item btntolak" href="#">Tolak</a>
+                                    <a data-id="{{$item->id_memo}}" class="dropdown-item btn-tolak" href="#">Tolak</a>
                                 </div>  
                             </td>
                         </tr>
@@ -134,14 +127,21 @@
 
 <script>
     $(document).ready(function(){
-        $('table').on('click','.btntolak',function(){
-            $('#formtolak').modal('show');
-            $tr = $(this).closest('tr');
-            var data = $tr.children("td").map(function(){
-                return $(this).text();
-            }).get();
-            // console.log(data);
-            $('#nomemo').val(data[1]);
+        $('table').on('click','.btn-tolak',function(){
+            let idmemo = $(this).data('id')
+            $.ajax({
+                url : `/konfirmasi/tolak/${idmemo}`,
+                method : "GET",
+                success: function (data) { 
+                    $('#formtolak').find('.modal-body').html(data)    
+                    $('#formtolak').modal('show');
+                 },
+                 error : function (error) { 
+                    console.log(error)
+                  }
+
+            })
+           
         });
          //Update
         $('#tolak').on('submit', function(e){
@@ -149,7 +149,7 @@
             //var kode = $('#nomemo').val();
     
             $.ajax({
-                type : "GET",
+                type : "POST",
                 url  : "/memo/tolak",
                 data : $('#tolak').serialize(),
                 success: function(response){
