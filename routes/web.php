@@ -32,8 +32,11 @@ Route::get('/memo-disposisi/view/{id}','App\Http\Controllers\memoController@ceta
 Route::get('/memo/tracking/{id}','App\Http\Controllers\memoController@trackingmemo');
 
 //Notulen
-Route::get('/notulen/create','App\Http\Controllers\memoController@createnotulen');
-Route::get('/notulen/edit','App\Http\Controllers\memoController@updatenotulen');
+Route::get('/notulen/view/{id}','App\Http\Controllers\memoController@viewmodal');
+Route::post('/notulen/create','App\Http\Controllers\memoController@createnotulen');
+Route::get('/notulen/edit/{id}','App\Http\Controllers\memoController@vieweditmodal');
+Route::post('/notulen/update','App\Http\Controllers\memoController@updatenotulen');
+Route::get('/notulen/lihat/{id}','App\Http\Controllers\memoController@lihatnotulen');
 Route::get('/notulen/hapus/{id}','App\Http\Controllers\memoController@hapusnotulen');
 
 //Disposisi
@@ -106,16 +109,22 @@ Route::group(['middleware' => ['auth','ceklogin:admin']], function(){
     //Hapus Memo
     Route::get('/memo/hapus/{id}','App\Http\Controllers\memoController@hapus');
 });
+
 //Kabag
 Route::group(['middleware' => ['auth','ceklogin:kabag,admin']], function(){
-    //KOnfirmasi Memo
+    //Konfirmasi Memo
     Route::get('/konfir-memo','App\Http\Controllers\memoController@konfirm');
+    //Terima
     Route::get('/memo/setuju/{id}','App\Http\Controllers\memoController@accMemo');
-    Route::get('/memo/tolak','App\Http\Controllers\memoController@tolak');
+    //Tolak
+    Route::get('/konfirmasi/tolak/{id}','App\Http\Controllers\memoController@view_modal_tolak');
+    Route::post('/memo/tolak','App\Http\Controllers\memoController@tolak');
+    //Lihat PDF 
     Route::get('/konfirmasi-memo/view/{id}','App\Http\Controllers\memoController@cetakpdfdom');
-
+    //Hapus Forward Disposisi
     Route::get('/hapus/forward/disposisi/surat/{id}','App\Http\Controllers\disposisiController@hapusforwardterkirim');
 });
+
 //Direktur
 Route::group(['middleware' => ['auth','ceklogin:dirut,admin']], function(){
     Route::get('/surat/disposisi','App\Http\Controllers\disposisiController@disposisiluar');

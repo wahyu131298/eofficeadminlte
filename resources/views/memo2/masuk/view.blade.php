@@ -15,17 +15,8 @@
               </button>
           </div>
           <form id="viewnotulen">
-          
               <div class="modal-body">
-              @csrf
-              {{ method_field('PUT')}}
-                      <input type="hidden" id="idmemo3" name="idmemo3">
-                      <input type="hidden" id="nomemo3" name="nomemo3">
-                      <div class="form-group">
-                          <label for="catatan3" class="col-form-label">Catatan</label>
-                          <textarea class="form-control" id="catatan3" name="catatan3" required></textarea>
-                      </div>
-                      
+                     
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -70,11 +61,6 @@
                     <tbody>
                     @foreach ($memomasuk as $item)
                         <tr @if ($item->status == 'belum')class="table-info" style="font-weight: 700;"@endif>  
-
-                            <input type="hidden" id="id_memo" value="{{$item->id_memo}}" >                                            
-                            <input type="hidden" id="no_memo" value="{{$item->no_surat}}" >                                            
-                            <input type="hidden" id="isi" name="isi" value="{{$item->isi}}" > 
-
                             <td>{{++$i}}</td>
                             <td>{{ $item->no_surat}}</td>
                             <td>{{ $item->jabatan}}</td>
@@ -94,8 +80,8 @@
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item view-memo" href="/memo/view/{{$item->id_memo}}" target="_blank" >Lihat Memo</a>
                                     <a class="dropdown-item" href="/memo-masuk/disposisi/{{$item->id_memo}}">Disposisi</a>
-                                    @if ($item->jns_memo == 'undangan')
-                                         <a class="dropdown-item btn-view-notulen" href="#">Lihat Notulen</a>
+                                    @if ($item->jns_memo == 'undangan' && $item->id_memo_not != null)
+                                    <a data-id="{{$item->id_memo}}" class="dropdown-item btn-view-notulen" href="#">Lihat Notulen</a>
                                     @endif
                                    
                                     @if (auth()->user()->level == 'admin')
@@ -179,19 +165,23 @@
 </script>
 <script>
     $(document).ready(function(){
-        //edit
+        //Lihat Notulen
         $('table').on('click','.btn-view-notulen',function(){
+        //console.log($(this).data('id'))
+        let id = $(this).data('id')
+        $.ajax({
+            url : `/notulen/lihat/${id}`,
+            method : 'GET',
+            success : function (data) {
+                //console.log(data)
+                $('#formviewnotulen').find('.modal-body').html(data)    
                 $('#formviewnotulen').modal('show');
-                $tr = $(this).closest('tr');
-                var data = $tr.children("input").map(function(){
-                    return $(this).val();
-                }).get();
-                console.log(data);
-
-                $('#idmemo3').val(data[0]);
-                $('#nomemo3').val(data[1]);
-                $('#catatan3').val(data[2]);
-            });
-    });
+            },
+            error : function (error) {
+                console.log(error)    
+            }
+        })
+        });
+    });    
 </script>
 @endpush

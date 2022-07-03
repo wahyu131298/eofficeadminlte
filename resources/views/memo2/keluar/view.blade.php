@@ -14,24 +14,17 @@
               <span aria-hidden="true">&times;</span>
               </button>
           </div>
-          <form id="notulen">
-          
-              <div class="modal-body">
-              @csrf
-              {{ method_field('PUT')}}
-                      <input type="hidden" id="idmemo" name="idmemo">
-                      <input type="hidden" id="nomemo" name="nomemo">
-                      <div class="form-group">
-                          <label for="catatan" class="col-form-label">Catatan</label>
-                          <textarea class="form-control" id="catatan" name="catatan" required></textarea>
-                      </div>
-                      
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary">Simpan</button>
-              </div>
-          </form>
+          <!--Modal Notulen-->
+            <form id="notulen" action="/notulen/create" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <!--Body Notulen => memo2.keluar.modal-notulen--> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-simpan">Simpan</button>
+                </div>
+            </form>
       </div>
     </div>
   </div>
@@ -47,22 +40,15 @@
               <span aria-hidden="true">&times;</span>
               </button>
           </div>
-          <form id="editnotulen">
-          
+          <!--Edit Notulen-->
+          <form id="editnotulen" action="/notulen/update" method="POST">
+            @csrf
               <div class="modal-body">
-              @csrf
-              {{ method_field('PUT')}}
-                      <input type="hidden" id="idmemo2" name="idmemo2">
-                      <input type="hidden" id="nomemo2" name="nomemo2">
-                      <div class="form-group">
-                          <label for="catatan2" class="col-form-label">Catatan</label>
-                          <textarea class="form-control" id="catatan2" name="catatan2" required></textarea>
-                      </div>
-                      
+                     
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary">Simpan</button>
+                  <button type="submit" class="btn btn-primary btn-ganti">Ganti</button>
               </div>
           </form>
       </div>
@@ -105,10 +91,10 @@
                    
                     @foreach ($memokeluar as $item)
                         <tr>
-                            <input type="hidden" id="id_memo" value="{{$item->id_memo}}" >                                            
+                            {{-- <input type="hidden" id="id_memo" value="{{$item->id_memo}}" >                                            
                             <input type="hidden" id="no_memo" value="{{$item->no_surat}}" >                                            
                             <input type="hidden" id="isi" name="isi" value="{{$item->isi}}" >                         
-                            
+                             --}}
                             <td>{{++$i}}</td>
                             <td>{{ $item->no_surat}}</td>
                             <td>{{ $item->perihal}}</td>
@@ -158,10 +144,10 @@
                                     @endif
                                   
                                     @if ($item->id_memo_not == null && $item->jns_memo == 'undangan')
-                                        <a class="dropdown-item btn-notulen" href="#">Tambah Notulen</a>
+                                        <a data-id="{{$item->id_memo}}" class="dropdown-item btn-notulen" href="#">Tambah Notulen</a>
                                     @endif
                                     @if($item->id_memo_not != null)
-                                        <a class="dropdown-item btn-edit-notulen" href="#">Edit Notulen</a>
+                                        <a data-id="{{$item->id_memo}}" class="dropdown-item btn-edit-notulen" href="#">Edit Notulen</a>
                                         <a class="dropdown-item btn-hapus-notulen" href="/notulen/hapus/{{$item->id_memo}}">Hapus Notulen</a>
                                     @endif
                                     @if (auth()->user()->level == 'admin')
@@ -202,7 +188,7 @@
       "responsive": true, 
     });
 </script>
-
+<!--Hapus Memo-->
 <script>
     $(document).ready(function($){
         $('table').on('click','.hapusmemo',function(){
@@ -241,26 +227,31 @@
     });
  
 </script>
+
+<!--View Notulen-->
 <script>
 $(document).ready(function(){
-    //Insert
+    //View Modal Notulen
     $('table').on('click','.btn-notulen',function(){
-        $('#formnotulen').modal('show');
-        
-        $tr = $(this).closest('tr');
-        var data = $tr.children("input").map(function(){
-            return $(this).val();
-        }).get();
-        console.log(data);
-
-        $('#idmemo').val(data[0]);
-        $('#nomemo').val(data[1]);
+        let id = $(this).data('id')
+        $.ajax({
+            url : `/notulen/view/${id}`,
+            method : 'GET',
+            success : function (data) {
+                //console.log(data)
+                $('#formnotulen').find('.modal-body').html(data)    
+                $('#formnotulen').modal('show');
+            },
+            error : function (error) {
+                console.log(error)    
+            }
+        })
     });
-     //insert2
+     //insert Notulen
     $('#notulen').on('submit', function(e){
         e.preventDefault();
         $.ajax({
-            type : "GET",
+            type : "POST",
             url  : "/notulen/create",
             data : $('#notulen').serialize(),
             success: function(response){
@@ -274,7 +265,8 @@ $(document).ready(function(){
                             }).then((result) => {
                             /* Read more about isConfirmed, isDenied below */
                             if (result.isConfirmed) {
-                               location.reload();
+                            location.reload();
+                             //$("#example1").DataTable().ajax.reload();
                             } 
                             });
             },
@@ -284,30 +276,31 @@ $(document).ready(function(){
             }
         });
     });
-
-
-    //edit
+    //view edit Notulen
     $('table').on('click','.btn-edit-notulen',function(){
-        $('#formeditnotulen').modal('show');
-        $tr = $(this).closest('tr');
-        var data = $tr.children("input").map(function(){
-            return $(this).val();
-        }).get();
-        console.log(data);
-
-        $('#idmemo2').val(data[0]);
-        $('#nomemo2').val(data[1]);
-        $('#catatan2').val(data[2]);
+        let id = $(this).data('id')
+        $.ajax({
+            url : `/notulen/edit/${id}`,
+            method : 'GET',
+            success : function (data) {
+                //console.log(data)
+                $('#formeditnotulen').find('.modal-body').html(data)    
+                $('#formeditnotulen').modal('show');
+            },
+            error : function (error) {
+                console.log(error)    
+            }
+        })
     });
-     //Update
+     //Update Notulen
     $('#editnotulen').on('submit', function(e){
         e.preventDefault();
         $.ajax({
-            type : "GET",
-            url  : "/notulen/edit",
+            type : "POST",
+            url  : "/notulen/update",
             data : $('#editnotulen').serialize(),
             success: function(response){
-                console.log(response)
+                //console.log(response)
                 $('#formeditnotulen').modal('hide');
                   Swal.fire({
                             icon: 'success',
@@ -317,7 +310,8 @@ $(document).ready(function(){
                             }).then((result) => {
                             /* Read more about isConfirmed, isDenied below */
                             if (result.isConfirmed) {
-                               location.reload();
+                                location.reload();
+                                //$("#example1").DataTable().ajax.reload();
                             } 
                             });
             },
