@@ -94,6 +94,7 @@ Route::group(['middleware' => ['auth','ceklogin:admin']], function(){
     //Jabatan
     //Route::get('/fetch','App\Http\Controllers\jabatanController@fetcjabatan');
     Route::get('/list-jabatan','App\Http\Controllers\jabatanController@list');
+    Route::get('/form/jabatan/{id}','App\Http\Controllers\jabatanController@view_modal_jabatan');
     Route::post('/insert-jabatan','App\Http\Controllers\jabatanController@insert');
     Route::put('/update-jabatan/{id}','App\Http\Controllers\jabatanController@update');
     Route::get('/jabatan/hapus/{id}','App\Http\Controllers\jabatanController@delete');
