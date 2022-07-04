@@ -24,7 +24,7 @@
     <div class="card-header text-center">
       
             <img class="logo mb-1" src="{{asset('image/setting')}}/{{$login->logo}}" style="width: 27%" ><br>
-            <a href="#" class="h1"><b>E-</b>Office RSMS</a>
+            <a href="#" class="h3"><b>E-</b>Office RSMS</a>
     </div>
     <div class="card-body">
         
