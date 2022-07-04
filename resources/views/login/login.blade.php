@@ -16,7 +16,7 @@
    <!--Sweet alert-->
   <script src="{{asset('/extambahan/sweetalert/sweetalert.all.js')}}"></script>
 </head>
-<body class="hold-transition login-page">
+<body class="hold-transition login-page" style="background:linear-gradient(#6eaae9, #ffffff)">
   @include('sweetalert::alert')
 <div class="login-box">
   <!-- /.login-logo -->
