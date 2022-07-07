@@ -230,7 +230,7 @@
     </div>
 
 
-    <!-- /.row -->
+    {{-- <!-- /.row -->
     <div class="row">
       <!-- Content Column -->
       <div class="col-lg-10 mb-10">
@@ -241,8 +241,8 @@
               </div>
               <div class="card-body">
   
-                 
-                <table class="table table-bordered" id="example1" width="100%" cellspacing="0">
+                <div class="card-body table-responsive p-0" style="height: 300px;"> 
+                  <table class="table table-head-fixed text-nowrap" id="example1" >
                           <thead>
                               <tr>
                                 <th scope="col">#</th>
@@ -278,10 +278,74 @@
                                   </tr>
                               @endforeach
                           </tbody>
-                      </table>
-                
+                    </table>
+                  </div>
               </div>
           </div>
+      </div>
+    </div> --}}
+
+    <div class="row">
+      <div class="col-lg-10 mb-10">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Pengguna</h3>
+
+            {{-- <div class="card-tools">
+              <div class="input-group input-group-sm" style="width: 150px;">
+                <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-default">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+            </div> --}}
+          </div>
+          <!-- /.card-header -->
+          <div class="card-body table-responsive p-0" style="height: 500px;">
+            <table class="table table-head-fixed text-nowrap">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Nama</th>
+                  <th scope="col">Terakhir Dilihat</th>
+                  <th scope="col">Status</th>
+                
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($online as $useronline)
+                    <tr>
+                        <td> 
+                            @if( $useronline->jk == 'laki')
+                            <img class="img-profile rounded-circle" src="{{asset('/img/undraw_profile.svg')}}">
+                            @endif
+                            @if( $useronline->jk == 'perempuan')
+                            <img class="img-profile rounded-circle" src="{{asset('/img/undraw_profile_1.svg')}}">
+                            @endif
+                        </td>
+                        <td>
+                            {{$useronline->Nama}}
+                        </td>
+                        <td><span class="badge badge-pill badge-light">{{ Carbon\Carbon::parse($useronline->last_seen)->diffForHumans() }}</span></td>
+                        <td>
+                            @if(Cache::has('user-is-online-' . $useronline->id_user))
+                            <span class="badge badge-pill badge-success">Online</span>
+                                
+                            @else
+                            <span class="badge badge-pill badge-dark">Offline</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            </table>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
       </div>
     </div>
   
@@ -359,7 +423,7 @@
    
 </script>
 
-<!-- DataTables  & Plugins -->
+{{-- <!-- DataTables  & Plugins -->
 <script src="{{asset('/plugins/datatables/jquery.dataTables.min.js')}}"></script>
 <script src="{{asset('/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js')}}"></script>
 <script src="{{asset('/plugins/datatables-responsive/js/dataTables.responsive.min.js')}}"></script>
@@ -380,5 +444,5 @@
         info: false,
         bFilter : false
     });
-</script>
+</script> --}}
 @endpush
