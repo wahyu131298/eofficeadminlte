@@ -94,7 +94,7 @@ class userController extends Controller
             //Alert::success('Berhasil...', 'Data Berhasil diHapus');
             return back();
         }else {
-            Alert::error('Gagal...', 'Data Belum diHapus');
+            Alert::error('Gagal...', 'Data Gagal diHapus');
             return back();
         }
         
