@@ -55,7 +55,7 @@
             <td>{{$value->Nama}}</td>
         </tr>
       
-        <tr>
+        <tr style="vertical-align: top;">
             <td>Kepada Yth</td>
             <td>:</td>
             <td>{{$value->kepada}}</td>

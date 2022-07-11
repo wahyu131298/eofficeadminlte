@@ -89,7 +89,7 @@
         </tr>
         @endforeach
         @foreach ($disposisi as $item2 )
-        <tr>
+        <tr style="vertical-align: top">
             <td colspan="3" style="text-align:left">Isi Disposisi</td>
             <td style="text-align:center">:</td>
             <td colspan="4" style="text-align:left">{{$item2->isi}}</td>
