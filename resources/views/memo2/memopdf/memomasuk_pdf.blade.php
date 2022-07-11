@@ -56,14 +56,14 @@
         </tr>
       
         <tr>
-            <td>Kepada Yth</td>
-            <td>:</td>
-            <td>{{$value->kepada}}</td>
+            <td style="vertical-align: top;">Kepada Yth</td>
+            <td style="vertical-align: top;">:</td>
+            <td style="vertical-align: top;">{{$value->kepada}}</td>
         @endforeach
-            <td>Bagian</td>
-            <td>:</td>
+            <td style="vertical-align: top;">Bagian</td>
+            <td style="vertical-align: top;">:</td>
         @foreach ($konfir2 as $value2)
-             <td>{{$value2->jabatan}}</td>
+             <td style="vertical-align: top;">{{$value2->jabatan}}</td>
         @endforeach
            
         </tr>
