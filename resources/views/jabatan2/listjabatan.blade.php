@@ -21,7 +21,7 @@
                 <!--Modal Body-->    
                 <div class="form-group">
                     <label for="kode" class="col-form-label">Kode Jabatan</label>
-                    <input type="text" class="form-control" name="kode" value="{{$kode}}" readonly>
+                    <input type="text" class="form-control" name="kode" required>
                 </div>
                 <div class="form-group">
                     <label for="jabatan" class="col-form-label">Jabatan</label>
@@ -154,7 +154,7 @@
                 url: "/insert-jabatan",
                 data : $('#addjabatan').serialize(),
                 success: function(response){
-                    console.log(response)
+                    //console.log(response)
                     $('#addJabatanmodal').modal('hide')
                      Swal.fire({
                                 icon: 'success',
@@ -170,13 +170,13 @@
                        
                 },
                 error:function(error){
-                    console.log(error)
+                    //console.log(error)
                     Swal.fire(
-                            'Gagal',
-                            'Data Gagal Disimpan',
+                            'Gagal Disimpan',
+                            'Kode Jabatan Sudah Digunakan',
                             'error'
                             );
-                            location.reload(); 
+                            // location.reload(); 
                 }
             });
         }); 
