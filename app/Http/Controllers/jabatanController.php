@@ -14,11 +14,14 @@ class jabatanController extends Controller
     public function list(Request $request)
     {
         $setting = setting::first();
-        $kode_jabatan = IdGenerator::generate(['table' => 'tb_jabatan', 'length' => 10, 'prefix' =>'JAB-']);
+        // $kode_jabatan = IdGenerator::generate(['table' => 'tb_jabatan', 'length' => 10, 'prefix' =>'JAB-']);
         $pagination = 5;
         $query = Jabatan::get();
-        $data = ['jabatan' => $query,'kode' => $kode_jabatan,'logo'=> $setting];
-        
+        // $data = ['jabatan' => $query,'kode' => $kode_jabatan,'logo'=> $setting];
+        $data = [
+                    'jabatan' => $query,
+                    'logo'=> $setting
+                ];
         return view('jabatan2.listjabatan',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
     public function view_modal_jabatan($id)
@@ -30,13 +33,23 @@ class jabatanController extends Controller
     public function insert(Request $request)
     {
         $validated = $request->validate([
+            'kode' => 'required',
             'jabatan' => 'required',          
         ]);
-      
+
+        $count_kode_jabatan = Jabatan::where('id',$request->input('kode'))->count();
+        if ($count_kode_jabatan > 0) {
+            $returnData = array(
+                'status' => 'error',
+                'message' => 'An error occurred!'
+            );
+            return Response::json($returnData, 500);
+        }else {
             $query = Jabatan::create([
                 'id' => $request->input('kode'),
                 'jabatan' => $request->input('jabatan')
-            ]);          
+            ]);  
+        }       
     }
     public function update(Request $request)
     {
