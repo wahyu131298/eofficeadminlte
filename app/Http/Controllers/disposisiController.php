@@ -24,14 +24,6 @@ use File;
 
 class disposisiController extends Controller
 {
-    
-    protected $fpdf;
-    public function __construct()
-    {
-        $this->fpdf = new Fpdf('P','mm','A5');
-       
-        
-    }
     public function index($id)
     {
         $auth = Auth::user()->jabatan_id;
@@ -42,7 +34,7 @@ class disposisiController extends Controller
                             ->first();
 
         $query_user = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')
-                            ->where('tb_user.level','kabag')
+                            // ->where('tb_user.level','kabag')
                             ->whereNotIn('tb_user.jabatan_id', [$auth,'-','admin'])
                             ->get();
 
@@ -778,109 +770,33 @@ class disposisiController extends Controller
     }
     public function lihatdisposisiterkirim($id)
     {
-       //view pdf Disposisi Surat Masuk
-      $query_header = setting::all();
+        //view pdf Disposisi Surat Keluar / Terkirim
+        $query_header = setting::all();
 
-      $query_surat = Surat::join('tb_jabatan','tb_surat.kepada','=','tb_jabatan.id')
-      ->where('id_surat',$id)->get();
+        $query_surat = Surat::join('tb_jabatan','tb_surat.kepada','=','tb_jabatan.id')
+        ->where('id_surat',$id)->get();
 
-      $pengirim_disposisi = Surat::join('tb_jabatan','tb_surat.pengirim_disposisi','=','tb_jabatan.id')
-      ->where('id_surat',$id)->get();
+        $pengirim_disposisi = Surat::join('tb_jabatan','tb_surat.pengirim_disposisi','=','tb_jabatan.id')
+        ->where('id_surat',$id)->get();
+        
+        //DOM PDF
+        $nosurat = "";
+        foreach ($query_surat as $value) {
+            $no = $value->no_surat;
+        }
+        $nosurat = $no;
 
-      $this->fpdf->AddPage();
-      $this->fpdf->SetFont('Times','',12);
-     
+        $data = [
+            'setting' => $query_header,
+            'surat' => $query_surat,
+            'pengirim' =>$pengirim_disposisi,
+            'title' => "Disposisi $nosurat"
+        ];
 
-        foreach($query_header as $header){
-          $this->fpdf->image('image/setting/'.$header->logo,10,8,15,15);
-          $this->fpdf->Cell(17,1,'',0,0,'L');
-          $this->fpdf->SetFont('Times','',12);
-          $this->fpdf->Cell(50,2,'RUMAH SAKIT',0,1,'L');
-          $this->fpdf->Cell(17,1,'',0,0,'L');
-          $this->fpdf->SetFont('Times','B',14);
-          $this->fpdf->Cell(150,7,strtoupper($header->nama_instansi),0,1,'L');
-          $this->fpdf->Cell(18,1,'',0,0,'L');
-          $this->fpdf->Cell(82,0,'',1,1,'C');
-          $this->fpdf->SetFont('Times','B',8.5);
-          $this->fpdf->Cell(17,0,'',0,0,'L');
-          $this->fpdf->Cell(150,4,strtoupper($header->motto),0,1,'L');
-          // Memberikan space kebawah agar tidak terlalu rapat
-        }  
-          //Header
-          $this->fpdf->ln(2);
-          $this->fpdf->SetFont('Times','B',14);
-          $this->fpdf->Cell(135,0,'',1,1,'C');
-          $this->fpdf->ln(0.1);
-          $this->fpdf->SetFont('Times','B',14);
-          $this->fpdf->Cell(135,0,'',1,1,'C');
-          $this->fpdf->ln(0.1);
-          $this->fpdf->SetFont('Times','',14);
-          $this->fpdf->Cell(135,0,'',1,1,'C');
-          $this->fpdf->ln(0.7);
-          $this->fpdf->SetFont('Times','B',14);
-          $this->fpdf->Cell(135,0,'',1,1,'C');
-          $this->fpdf->SetFont('Times','B',12);
-          $this->fpdf->ln(4);
-          $this->fpdf->Cell(135,6,'LEMBAR DISPOSISI',0,1,'C');
-          $this->fpdf->Cell(47,1,'',0,0,'L');
-          $this->fpdf->Cell(41,0,'',1,1,'C'); 
+        $pdf =  PDF::loadview('disposisi2.pdfview',$data);
+        $pdf->setPaper('A5');
+        return $pdf->stream("Disposisi Surat $nosurat.pdf");
 
-          foreach ($query_surat as $data) {
-              $this->fpdf->ln(5);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Tanggal Penerimaan Surat',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              $this->fpdf->Cell(10,6,date("d-F-Y", strtotime($data->tgl)),0,0,'L');
-      
-              $this->fpdf->ln(5);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Nama Pengirim',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              $this->fpdf->Cell(10,6,$data->pengirim,0,0,'L');
-      
-              $this->fpdf->ln(5);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Alamat Pengirim',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              $this->fpdf->Cell(10,6,$data->alamat,0,0,'L');
-      
-              $this->fpdf->ln(5);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Perihal',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              $this->fpdf->Cell(10,6,$data->perihal,0,0,'L');
-            }
-              $this->fpdf->ln(10);
-              $this->fpdf->SetFont('Times','B',12);
-              $this->fpdf->Cell(135,6,'PERJALANAN MEMO',0,1,'L');
-              
-          
-              $this->fpdf->ln(2);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Disposisi Dari',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              foreach ($pengirim_disposisi as $data1) {
-                $this->fpdf->Cell(10,6,$data1->jabatan,0,0,'L');
-              }
-             
-              $this->fpdf->ln(5);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Disampaikan Kepada',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              foreach ($query_surat as $data2) {
-              $this->fpdf->Cell(10,6,$data2->jabatan,0,0,'L');
-              
-   
-              $this->fpdf->ln(5);
-              $this->fpdf->SetFont('Times','',12);
-              $this->fpdf->Cell(47,6,'Isi Disposisi',0,0,'L');
-              $this->fpdf->Cell(2,6,':',0,0,'L');
-              $this->fpdf->Cell(10,6,$data2->isi,0,0,'L');
-              }
-              
-
-          $this->fpdf->Output();
-          exit();
     }
     public function viewdisposisisurat($id)
     {
@@ -895,31 +811,31 @@ class disposisiController extends Controller
         ]);
 
         //view pdf Disposisi Surat Masuk
-      $query_header = setting::all();
+        $query_header = setting::all();
 
-      $query_surat = Surat::join('tb_jabatan','tb_surat.kepada','=','tb_jabatan.id')
-      ->where('id_surat',$id)->get();
+        $query_surat = Surat::join('tb_jabatan','tb_surat.kepada','=','tb_jabatan.id')
+        ->where('id_surat',$id)->get();
 
-      $pengirim_disposisi = Surat::join('tb_jabatan','tb_surat.pengirim_disposisi','=','tb_jabatan.id')
-      ->where('id_surat',$id)->get();
-     
-      //DOM PDF
-      $nosurat = "";
-      foreach ($query_surat as $value) {
-         $no = $value->no_surat;
-      }
-      $nosurat = $no;
+        $pengirim_disposisi = Surat::join('tb_jabatan','tb_surat.pengirim_disposisi','=','tb_jabatan.id')
+        ->where('id_surat',$id)->get();
+        
+        //DOM PDF
+        $nosurat = "";
+        foreach ($query_surat as $value) {
+            $no = $value->no_surat;
+        }
+        $nosurat = $no;
 
-      $data = [
-          'setting' => $query_header,
-          'surat' => $query_surat,
-          'pengirim' =>$pengirim_disposisi,
-          'title' => "Disposisi $nosurat"
-      ];
+        $data = [
+            'setting' => $query_header,
+            'surat' => $query_surat,
+            'pengirim' =>$pengirim_disposisi,
+            'title' => "Disposisi $nosurat"
+        ];
 
-      $pdf =  PDF::loadview('disposisi2.pdfview',$data);
-      $pdf->setPaper('A5');
-      return $pdf->stream("Disposisi Surat $nosurat.pdf");
+        $pdf =  PDF::loadview('disposisi2.pdfview',$data);
+        $pdf->setPaper('A5');
+        return $pdf->stream("Disposisi Surat $nosurat.pdf");
 
     }
     public function Forwardsurat($id)
