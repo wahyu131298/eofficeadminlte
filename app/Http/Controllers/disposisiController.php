@@ -626,7 +626,7 @@ class disposisiController extends Controller
         $jabatanid = Auth::user()->jabatan_id;
         $setting = setting::first();
         $query_user = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')
-                            ->where('tb_user.level','kabag')
+                            // ->where('tb_user.level','kabag')
                             ->whereNotIn('tb_user.jabatan_id', [$jabatanid,'admin'])
                             ->get();
        
