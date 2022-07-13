@@ -1,3 +1,7 @@
+<?php
+
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -101,9 +105,10 @@
         @endforeach
         </tr>
         <tr >
-         @foreach ($konfir1 as $value) 
-            <td  colspan="6" style="height:1%" class="ttd_name"><img src="{{public_path('image/qrcode/'.$value->qr_code)}}"></td>
-            @endforeach
+        @foreach ($konfir1 as $value) 
+            {{-- <td  colspan="6" style="height:1%" class="ttd_name"><img src=""></td> --}}
+            <td  colspan="6" style="height:1%" class="ttd_name"><img style="width: 80px;height: auto" src="{{public_path('image/qrcode/'.$value->qr_code)}}"></td>
+        @endforeach
         </tr>
         <tr >
          @foreach ($konfir1 as $value) 

@@ -104,7 +104,7 @@
         </tr>
         <tr >
          @foreach ($konfir1 as $value3)
-            <td  colspan="6" style="height:1%" class="ttd_name"><img src="{{public_path('image/qrcode/'.$value3->qr_code)}}"></td>
+            <td  colspan="6" style="height:1%" class="ttd_name"><img style="width: 80px;height: auto"  src="{{public_path('image/qrcode/'.$value3->qr_code)}}"></td>
         @endforeach
             
         </tr>
