@@ -12,6 +12,7 @@ use Alert;
 use Auth;
 use Milon\Barcode\DNS1D;
 use Milon\Barcode\DNS2D;
+use SimpleSoftwareIO\QrCode\Generator;
 use Illuminate\Support\Str;
 use File;
 class userController extends Controller
@@ -50,13 +51,23 @@ class userController extends Controller
             return back();
         }else {
             if ($validated) {
-                $d = new DNS2D();
-                $d->setStorPath(public_path('/image/qrcode'));
+
+                $setting = setting::get();
+                $logo = "";
+                foreach ($setting as $value) {
+                   $logo .= "$value->logo";
+                }
+                $namelogo = $logo;
+                // $d = new DNS2D();
+                // $d->setStorPath(public_path('/image/qrcode'));
+                $qrcode = new Generator;
                 //Data yang dimasujkkan QR-Code
-                $dataqr = $request->input('nip').$request->input('nama');
+                $dataqr = $request->input('nip')." - ".$request->input('nama');
                 //Generate
-                $qrcode = $d->getBarcodePNGPath($dataqr, 'QRCODE');
+                // $qrcode = $d->getBarcodePNGPath($dataqr, 'QRCODE');
                 $file_name= Str::slug($dataqr);
+
+                $qrcode->format('png')->size(250)->errorCorrection('H')->merge('../public/image/setting/'.$namelogo , .3, true)->generate($dataqr, '../public/image/qrcode/'.$file_name.'-qrcode.png');
     
                 $hash_password = Hash::make($request->input('psw'));
                 $query = User::create(
@@ -68,7 +79,7 @@ class userController extends Controller
                     'jk' => $request->input('jk'),
                     'level' => $request->input('level'),
                     'jabatan_id' => $request->input('jabatan'),
-                    'qr_code' =>  $file_name."qrcode.png"
+                    'qr_code' =>  $file_name."-qrcode.png"
                 ]);
             }
         
@@ -129,18 +140,27 @@ class userController extends Controller
             $gantipassword = $request->input('psw');
             //Update Tanpa Password
             if ($gantipassword == null) {
+
                //Hapus QRcode
                 $query_first= User::where('id_user',$request->input('cid'))->first();
                 File::delete(public_path('image/qrcode/').$query_first->qr_code);
 
-                //buat QR-code
-                $d = new DNS2D();
-                $d->setStorPath(public_path('/image/qrcode'));
+                $setting = setting::get();
+                $logo = "";
+                foreach ($setting as $value) {
+                   $logo .= "$value->logo";
+                }
+                $namelogo = $logo;
+                // $d = new DNS2D();
+                // $d->setStorPath(public_path('/image/qrcode'));
+                $qrcode = new Generator;
                 //Data yang dimasujkkan QR-Code
-                $dataqr = $request->input('nip').$request->input('nama');
+                $dataqr = $request->input('nip')." - ".$request->input('nama');
                 //Generate
-                $qrcode = $d->getBarcodePNGPath($dataqr, 'QRCODE');
+                // $qrcode = $d->getBarcodePNGPath($dataqr, 'QRCODE');
                 $file_name= Str::slug($dataqr);
+                //Simpan data ke Direktori
+                $qrcode->format('png')->size(250)->errorCorrection('H')->merge('../public/image/setting/'.$namelogo, .3, true)->generate($dataqr, '../public/image/qrcode/'.$file_name.'-qrcode.png');
 
                 $update = User::where('id_user', $request->input('cid'))->update([
                 'nip' => $request->input('nip'),
@@ -149,7 +169,7 @@ class userController extends Controller
                 'jk' => $request->input('jk'),
                 'level' => $request->input('level'),
                 'jabatan_id' => $request->input('jabatan'),
-                'qr_code' =>  $file_name."qrcode.png"
+                'qr_code' =>  $file_name."-qrcode.png"
                 ]);
             }else {
                 //Update dengan Password
@@ -157,15 +177,23 @@ class userController extends Controller
                 //Hapus QRcode
                 $query_first= User::where('id_user',$request->input('cid'))->first();
                 File::delete(public_path('image/qrcode/').$query_first->qr_code);
-
-                //buat QR-code
-                $d = new DNS2D();
-                $d->setStorPath(public_path('/image/qrcode'));
+                
+                $setting = setting::get();
+                $logo = "";
+                foreach ($setting as $value) {
+                   $logo .= "$value->logo";
+                }
+                $namelogo = $logo;
+                // $d = new DNS2D();
+                // $d->setStorPath(public_path('/image/qrcode'));
+                $qrcode = new Generator;
                 //Data yang dimasujkkan QR-Code
-                $dataqr = $request->input('nip').$request->input('nama');
+                $dataqr = $request->input('nip')." - ".$request->input('nama');
                 //Generate
-                $qrcode = $d->getBarcodePNGPath($dataqr, 'QRCODE');
+                // $qrcode = $d->getBarcodePNGPath($dataqr, 'QRCODE');
                 $file_name= Str::slug($dataqr);
+
+                $qrcode->format('png')->size(250)->errorCorrection('H')->merge('../public/image/setting/'.$namelogo, .3, true)->generate($dataqr, '../public/image/qrcode/'.$file_name.'-qrcode.png');
 
                 $hash_password_update = Hash::make($request->input('psw'));
                 $update = User::where('id_user', $request->input('cid'))->update([
@@ -176,7 +204,7 @@ class userController extends Controller
                 'jk' => $request->input('jk'),
                 'level' => $request->input('level'),
                 'jabatan_id' => $request->input('jabatan'),
-                'qr_code' =>  $file_name."qrcode.png"
+                'qr_code' =>  $file_name."-qrcode.png"
                 ]);
             }
             
