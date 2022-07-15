@@ -100,11 +100,11 @@
 </script>
 <script>
     $(document).ready(function($){
-        $('.hapusforward').on('click',function(){
+        $('table').on('click','.hapusforward',function(){
             let getLink = $(this).attr('href');
             swal.fire({
                     title: 'Hapus Forward Disposisi',
-                    text: 'Yakim Ingin Hapus Data Forward Disposisi',
+                    text: 'Yakin Ingin Hapus Data Forward Disposisi',
                     icon: 'warning',
                     confirmButtonText: 'Hapus',
                     confirmButtonColor: '#d9534f',

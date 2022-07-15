@@ -95,7 +95,7 @@
             var getLink = $(this).attr('href');
             swal.fire({
                     title: 'Hapus Disposisi',
-                    text: 'Yakim Ingin Hapus Data Disposisi',
+                    text: 'Yakin Ingin Hapus Data Disposisi',
                     icon: 'warning',
                     confirmButtonText: 'Hapus',
                     confirmButtonColor: '#d9534f',
