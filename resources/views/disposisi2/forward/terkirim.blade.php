@@ -62,7 +62,7 @@
                                     <a class="dropdown-item" href="/lihat/disposisi/keluar/{{$item->id_surat}}" title="Lihat Disposisi" target="_blank">Lihat Disposisi</a>
                                    
                                     @if (auth()->user()->level == 'admin')
-                                    <a class="dropdown-item hapusforward" href="/hapus/forward/disposisi/surat/{{$item->id_forward}}" title="Hapus Forward" target="_blank">Hapus Forward Disposisi</a>
+                                    <a class="dropdown-item hapusforward" href="/hapus/forward/disposisi/surat/{{$item->id_forward}}" title="Hapus Forward">Hapus Forward Disposisi</a>
                                     @endif
                                 </div>   
                                
@@ -101,7 +101,7 @@
 <script>
     $(document).ready(function($){
         $('.hapusforward').on('click',function(){
-            var getLink = $(this).attr('href');
+            let getLink = $(this).attr('href');
             swal.fire({
                     title: 'Hapus Forward Disposisi',
                     text: 'Yakim Ingin Hapus Data Forward Disposisi',

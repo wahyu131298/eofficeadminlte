@@ -44,7 +44,7 @@
                             <td>{{ $item->no_surat}}</td>
                             <td>{{ $item->pengirim}}</td>
                             <td>{{ $item->perihal}}</td>
-                            <td>{{ date("d-F-Y", strtotime($item->tgl))}}</td>
+                            <td>{{ date("d-F-Y", strtotime($item->tgl)) }}</td>
                             <td> 
                              <button class="btn btn-outline-danger dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Aksi</button>
                                 <div class="dropdown-menu">
