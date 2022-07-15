@@ -86,7 +86,7 @@
                            <div class="col-md-6">
                               <div class="form-group">
                                   <label for="kepada">Kepada</label>
-                                      <select id="kepada" name="kepada[]" class="select2bs4" multiple="multiple" data-placeholder="Select a State"
+                                      <select id="kepada" name="kepada[]" class="select2bs4" multiple="multiple" data-placeholder="Kepada"
                                       style="width: 100%;">
                                          
                                           @foreach ( $jabatan as $item )
@@ -102,10 +102,10 @@
                               
                               <div class="form-group">
                                   <label for="cc">Tembusan</label>
-                                      <select id="cc" name="cc[]" class="select2bs4" multiple="multiple" data-placeholder="Select a State"
+                                      <select id="cc" name="cc[]" class="select2bs4" multiple="multiple" data-placeholder="Tembusan / CC"
                                       style="width: 100%;">
                                           @foreach ( $jabatan as $item )
-                                              <option value="{{$item->jabatan}}">{{$item->jabatan}}</option>
+                                              <option value="{{$item->jabatan}}" @if ($item->jabatan == '-') selected @endif>{{$item->jabatan}}</option>
                                           @endforeach
                                          
                                       </select>
@@ -120,7 +120,7 @@
                               <div class="col-md-7">
                                   <div class="form-group">
                                       <label for="penerima">User yang Menerima</label>
-                                      <select id="penerima" name="penerima[]" class="select2bs4" multiple="multiple" data-placeholder="Select a State"
+                                      <select id="penerima" name="penerima[]" class="select2bs4" multiple="multiple" data-placeholder="Pilih Yang Di Input di Kepada dan Tembusan/CC"
                                       style="width: 100%;">
                                           @foreach ( $user as $users )
                                               <option value="{{$users->jabatan_id}}">{{$users->Nama}} ({{$users->jabatan}})</option>
@@ -138,9 +138,9 @@
                                       <label for="mengetahui">Mengetahui</label>
                                       <select class="custom-select mr-sm-2 select2bs4" id="mengetahui" name="mengetahui" style="width: 100%;">
                                           <option value="" selected>Pilih...</option>
-                                          @if (auth()->user()->level == 'kabag' || auth()->user()->level == 'dirut')
+                                          {{-- @if (auth()->user()->level == 'kabag' || auth()->user()->level == 'dirut') --}}
                                                <option value="-">Tanpa Mengetahui</option>
-                                          @endif
+                                          {{-- @endif --}}
                                           @foreach ($mengetahui as $item)
                                               <option value="{{$item->jabatan_id}}">{{$item->Nama}} ({{$item->jabatan}})</option>
                                           @endforeach
@@ -162,7 +162,7 @@
                           <div class="row">
                               <div class="col-md-6">
                                 <div class="form-group">
-                                  <label for="lampiran">Lampiran</label>
+                                  <label for="lampiran">Lampiran (Optional) </label>
                                   <div class="input-group">
                                     <div class="custom-file">
                                       <input type="file" class="custom-file-input" id="exampleInputFile" name="lampiran">
@@ -241,7 +241,8 @@
   
       //Initialize Select2 Elements
       $('.select2bs4').select2({
-        theme: 'bootstrap4'
+        theme: 'bootstrap4',
+        
       })
   
       
