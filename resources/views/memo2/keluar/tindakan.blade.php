@@ -46,7 +46,7 @@
                                 <th colspan="5">Disposisi Disampaikan Kepada</th>
                             </tr>
                             <tr>
-                                
+                               
                                 <th>No Memo</th>
                                 <th>Pengirim Disposisi</th>
                                 <th>Penerima Disposisi</th> 
@@ -57,7 +57,7 @@
                         <tbody>
                         @foreach ($detaildisposisi as $val)
                             <tr>                         
-                               
+                             
                                 <td>{{ $val->no_surat}}</td>
                                 <td>{{ $val->pengirim}}</td>
                                 <td>{{ $val->Nama}}</td>
@@ -81,21 +81,23 @@
                     <table class="table table-bordered example1" width="100%" cellspacing="0">
                         <thead>
                             <tr class="table-warning">
-                                <th colspan="5">Disposisi Diteruskan Kepada</th>
+                                <th colspan="6">Disposisi Diteruskan Kepada</th>
                             </tr>
                             <tr>
-                                <th>No</th>
+                                {{-- <th>No</th> --}}
                                 <th>No Memo</th>
-                                <th>Nama</th>
-                                <th>Jabatan</th> 
+                                <th>Dari</th>
+                                <th>Kepada</th>
+                                <th>Jabatan Penerima</th> 
                                 <th>Status Dilihat</th> 
                             </tr>
                         </thead>
                         <tbody>
                         @foreach ($detailfrw as $val)
                             <tr>                         
-                                <td>{{++$i}}</td>
+                                {{-- <td>{{++$i}}</td> --}}
                                 <td>{{ $val->no_surat}}</td>
+                                <td>{{ $val->pengirim}}</td>
                                 <td>{{ $val->Nama}}</td>
                                 <td>{{ $val->jabatan}}</td>
                                 <td>

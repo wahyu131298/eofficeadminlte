@@ -35,7 +35,7 @@ class Dashboard extends Controller
             $query_memomasuk = memoModel::count();
             $query_keluar = memoModel::count();
             //Disposisi Masuk
-            $disposisi_masuk = detaildisposisi::count();
+            $disposisi_masuk = Disposisi::count();
             //Disposisi Keluar
             $disposisi_keluar = Disposisi::count();
             //Forward Dispoisis memo masuk
@@ -75,7 +75,7 @@ class Dashboard extends Controller
             $query_keluar = memoModel::where('tb_memo.jabatan_pengirim','=',$auth)
             ->count();
             //Disposisi Masuk
-            $disposisi_masuk = detaildisposisi::where('kepada_disposisi',$auth)
+            $disposisi_masuk = Disposisi::where('tujuan_disposisi',$auth)
             ->count();
             //Disposisi Keluar
            

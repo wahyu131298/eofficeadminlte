@@ -105,7 +105,7 @@
                                       <select id="cc" name="cc[]" class="select2bs4" multiple="multiple" data-placeholder="Tembusan / CC"
                                       style="width: 100%;">
                                           @foreach ( $jabatan as $item )
-                                              <option value="{{$item->jabatan}}" @if ($item->jabatan == '-') selected @endif>{{$item->jabatan}}</option>
+                                              <option value="{{$item->jabatan}}">{{$item->jabatan}}</option>
                                           @endforeach
                                          
                                       </select>

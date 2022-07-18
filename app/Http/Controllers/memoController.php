@@ -243,12 +243,10 @@ class memoController extends Controller
                 $response = curl_exec($ch);
             
         }
-        
-
-        //jika insert berhasil / dijalankan 
+            //jika insert berhasil / dijalankan 
             if ($query) {
-            Alert::success('Berhasil...','Memo Berhasil Dikirim');
-            return back();
+                Alert::success('Berhasil...','Memo Berhasil Dikirim');
+                return back();
             }else {
                 Alert::error('Gagal...', 'Memo Gagal Dikirim');
                 return back();
@@ -310,7 +308,9 @@ class memoController extends Controller
             ->select('tb_memo.id_memo','tb_memo.no_surat','tb_memo.perihal','tb_memo.tgl_surat','tb_memo.lampiran','tb_memo.status_konfirm',
                      'tb_memo.tgl_konfirm','tb_memo.mengetahui','tb_memo.catatan','tb_disposisi.id_disposisi',
                      'tb_jabatan.jabatan','tb_notulen.id_memo_not','tb_memo.jns_memo','tb_notulen.isi')
+            ->groupBy('tb_memo.id_memo')
             ->Orderby('tb_memo.created_at','desc')
+            
             ->get();
         }
        
@@ -671,17 +671,29 @@ class memoController extends Controller
     {
         $pagination = 5;
         $setting = setting::first();
-        $query_detail = Disposisi::join('tb_detail_disposisi','tb_disposisi.id_disposisi','=','tb_detail_disposisi.id_disposisi_detail')
-        ->join('tb_jabatan as penerimadis','tb_detail_disposisi.kepada_disposisi','=','penerimadis.id')
+        // $query_detail = Disposisi::join('tb_detail_disposisi','tb_disposisi.id_disposisi','=','tb_detail_disposisi.id_disposisi_detail')
+        // ->join('tb_jabatan as penerimadis','tb_detail_disposisi.kepada_disposisi','=','penerimadis.id')
+        // ->join('tb_jabatan as pengirimdis','tb_disposisi.pengirim_disposisi','=','pengirimdis.id')
+        // ->join('tb_user','penerimadis.id','=','tb_user.jabatan_id')
+        // ->select('tb_disposisi.no_surat','tb_user.Nama','penerimadis.jabatan as penerima','pengirimdis.jabatan as pengirim','tb_detail_disposisi.tgl_disposisi_dilihat')
+        // ->where('tb_disposisi.id_disposisi','=',$id)
+        // ->get();
+
+        $query_detail = Disposisi::
+        join('tb_jabatan as penerimadis','tb_disposisi.tujuan_disposisi','=','penerimadis.id')
         ->join('tb_jabatan as pengirimdis','tb_disposisi.pengirim_disposisi','=','pengirimdis.id')
         ->join('tb_user','penerimadis.id','=','tb_user.jabatan_id')
-        ->select('tb_disposisi.no_surat','tb_user.Nama','penerimadis.jabatan as penerima','pengirimdis.jabatan as pengirim','tb_detail_disposisi.tgl_disposisi_dilihat')
-        ->where('tb_disposisi.id_disposisi','=',$id)
+        ->select('tb_disposisi.no_surat','tb_user.Nama','penerimadis.jabatan as penerima','pengirimdis.jabatan as pengirim','tb_disposisi.tgl_disposisi_dilihat')
+        ->where('tb_disposisi.id_memo_disposisi','=',$id)
         ->get();
 
-        $forward = Forward::join('tb_jabatan','tb_forward_disposisi.tujuan','=','tb_jabatan.id')
+        $forward = Forward::
+        join('tb_disposisi','tb_forward_disposisi.id_disposisi_frw','=','tb_disposisi.id_disposisi')
+        ->join('tb_jabatan as tujuanfor','tb_forward_disposisi.tujuan','=','tujuanfor.id')
         ->join('tb_user','tb_forward_disposisi.tujuan','=','tb_user.jabatan_id')
-        ->where('id_disposisi_frw',$id)->get();
+        ->join('tb_jabatan as pengirimfor','tb_forward_disposisi.pengirim','=','pengirimfor.id')
+        ->select('tb_forward_disposisi.no_surat','pengirimfor.jabatan as pengirim','tb_user.Nama','tujuanfor.jabatan as jabatan','tb_forward_disposisi.tgl_dibaca')
+        ->where('tb_disposisi.id_memo_disposisi',$id)->get();
 
         $nomor ="";
         foreach ($query_detail as $value) {
@@ -695,7 +707,7 @@ class memoController extends Controller
             'detailfrw' => $forward,
             'logo' => $setting
         ];
-        return view('memo2.keluar.tindakan',$data)->with('i',($request->input('page',1)-1)*$pagination);
+        return view('memo2.keluar.tindakan',$data);
     }
     
     

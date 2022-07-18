@@ -31,6 +31,7 @@
                         <tr>
                             <th>No</th>
                             <th>No Memo</th>
+                            <th>Tujuan Disposisi</th>
                             <th>Perihal</th> 
                             <th>Tanggal Disposisi</th> 
                             <th>Action</th>
@@ -42,6 +43,7 @@
                         <tr>                         
                             <td>{{++$i}}</td>
                             <td>{{ $item->no_surat}}</td>
+                            <td>{{ $item->jabatan}}</td>
                             <td>{{ $item->perihal}}</td>
                             <td>{{ date("d-F-Y", strtotime($item->tgl_disposisi))}}</td>
                             <td> 

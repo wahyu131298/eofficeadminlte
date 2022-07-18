@@ -59,13 +59,13 @@ class disposisiController extends Controller
             'sifat' => 'required',
             'perihal' => 'required',
             'pengirim' => 'required',
-            'jabatan' => 'required',
             'tgl_memo' => 'required',
             'kepada' => 'required',
             'isi_disposisi' => 'required'
         ]);
 
         $disposisi_count = Disposisi::where('id_memo_disposisi',$request->input('idmemo'))
+                                    ->where('tujuan_disposisi',$request->input('kepada'))
                                     ->count();
         if ($disposisi_count > 0) {
             Alert::error('Gagal...', 'Disposisi Gagal Dikirim, Memo Sudah Pernah Di Disposisikan');
@@ -78,21 +78,23 @@ class disposisiController extends Controller
                 'sifat' => $request->input('sifat'),
                 'perihal' => $request->input('perihal'),
                 'pengirim_memo' => $request->input('jabatan_pengirim'),
-                'jabatan' => $request->input('jabatan'),
                 'tgl_surat' => $request->input('tgl_memo'),
-                'tgl_disposisi' => $today,
+              
                 'pengirim_disposisi' => $auth,
+                'tujuan_disposisi' => $request->input('kepada'),
+                'tgl_disposisi' => $today,
+               
                 'isi' => $request->input('isi_disposisi')
                 
             ]);
-            $kepada = $request->input('kepada');
-            foreach ($kepada as $value) {
-                $query = detailDisposisi::create([
-                    'id_disposisi_detail' => $kode_disposisi,
-                    'no_surat' => $request->input('no_memo'),
-                    'kepada_disposisi' => $value
-                ]);
-            }
+            // $kepada = $request->input('kepada');
+            // foreach ($kepada as $value) {
+            //     $query = detailDisposisi::create([
+            //         'id_disposisi_detail' => $kode_disposisi,
+            //         'no_surat' => $request->input('no_memo'),
+            //         'kepada_disposisi' => $value
+            //     ]);
+            // }
             //Membuat Log Baru 
             $namajabatan = Jabatan::where('id',$auth)->first();        
             \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Disposisi Memo '.$request->input('no_memo').'');
@@ -109,9 +111,9 @@ class disposisiController extends Controller
             }
             $kpd = $kepada;
     
-            $kepada = $request->input('kepada');
-            foreach ($kepada as $value) {
-                $firebaseToken = User::where('jabatan_id',$value)->whereNotNull('device_token')->pluck('device_token')->all();
+            $kepada2 = $request->input('kepada');
+        
+                $firebaseToken = User::where('jabatan_id',$kepada2)->whereNotNull('device_token')->pluck('device_token')->all();
                 $data = [
                     "registration_ids" => $firebaseToken,
                     "notification" => [
@@ -121,7 +123,7 @@ class disposisiController extends Controller
                     ]
                 ];
                 $dataString = json_encode($data);
-            }
+            
            
         
             $headers = [
@@ -158,27 +160,32 @@ class disposisiController extends Controller
         $pagination = 5;
         $setting = setting::first();
         if (Auth::user()->level == 'admin') {
-            $query_masuk = detaildisposisi::
-            join('tb_disposisi','tb_detail_disposisi.id_disposisi_detail','=','tb_disposisi.id_disposisi')
-            ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
-            ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
-            ->groupBy('tb_disposisi.id_disposisi')
-            ->Orderby('tb_disposisi.created_at','desc')
+            // $query_masuk = detaildisposisi::
+            // join('tb_disposisi','tb_detail_disposisi.id_disposisi_detail','=','tb_disposisi.id_disposisi')
+            // ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
+            // ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
+            // ->groupBy('tb_disposisi.id_disposisi')
+            // ->Orderby('tb_disposisi.created_at','desc')
+            // ->get();
+
+            $query_masuk = Disposisi::join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
             ->get();
         }else {
             $auth = Auth::user()->jabatan_id;
-            $query_masuk = detaildisposisi::
-            join('tb_disposisi','tb_detail_disposisi.id_disposisi_detail','=','tb_disposisi.id_disposisi')
-            ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
-            ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
-            ->where('tb_detail_disposisi.kepada_disposisi','=',$auth)
-            ->groupBy('tb_disposisi.id_disposisi')
-            ->Orderby('tb_disposisi.created_at','desc')
-            ->get();
-        }
-        
-       
+            // $query_masuk = detaildisposisi::
+            // join('tb_disposisi','tb_detail_disposisi.id_disposisi_detail','=','tb_disposisi.id_disposisi')
+            // ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
+            // ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
+            // ->where('tb_detail_disposisi.kepada_disposisi','=',$auth)
+            // ->groupBy('tb_disposisi.id_disposisi')
+            // ->Orderby('tb_disposisi.created_at','desc')
+            // ->get();
 
+            $query_masuk = Disposisi::join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
+            ->where('tb_disposisi.tujuan_disposisi','=',$auth)->get();
+
+
+        }
         $data = ['dismasuk' => $query_masuk, 'logo' => $setting];
         return view('memo2.disposisi.masuk',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
@@ -187,11 +194,16 @@ class disposisiController extends Controller
         $pagination = 5;
         $setting = setting::first();
         $auth = Auth::user()->jabatan_id;
-        $query_keluar = detaildisposisi::join('tb_disposisi','tb_detail_disposisi.no_surat','=','tb_disposisi.no_surat')
-        ->where('tb_disposisi.pengirim_disposisi','=',$auth)
-        ->groupBy('tb_disposisi.no_surat')
-        ->Orderby('tb_disposisi.created_at','desc')
-        ->get();
+        // $query_keluar = detaildisposisi::
+        // join('tb_disposisi','tb_detail_disposisi.id_disposisi_detail','=','tb_disposisi.id_disposisi')
+        // ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')
+        // ->where('tb_disposisi.pengirim_disposisi','=',$auth)
+        // // ->groupBy('tb_disposisi.no_surat')
+        // ->Orderby('tb_disposisi.created_at','desc')
+        // ->get();
+
+        $query_keluar = Disposisi::join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')
+        ->where('pengirim_disposisi','=',$auth)->get();
 
         $data = ['disposisi' => $query_keluar, 'logo' => $setting];
         return view('memo2.disposisi.keluar',$data)->with('i',($request->input('page',1)-1)*$pagination);
@@ -200,8 +212,7 @@ class disposisiController extends Controller
     {
         $pagination = 5;
         $setting = setting::first();
-        $query_detail = Disposisi::join('tb_detail_disposisi','tb_disposisi.no_surat','=','tb_detail_disposisi.no_surat')
-        ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')
+        $query_detail = Disposisi::join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')
         ->join('tb_user','tb_jabatan.id','=','tb_user.jabatan_id')
         ->where('tb_disposisi.id_disposisi','=',$id)
         ->get();
@@ -218,32 +229,34 @@ class disposisiController extends Controller
         return view('memo2.disposisi.detail',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
 
+    //Disposisi Memo Intern Masuk 
     public function viewdisposisi($id)
     {
         //update status
         $jabatanid = Auth::user()->jabatan_id;
         $today = date('Y-m-d');
 
-        $quert_update_status = detaildisposisi::join('tb_disposisi','tb_detail_disposisi.id_disposisi_detail','=','tb_disposisi.id_disposisi')
-        ->where('tb_detail_disposisi.kepada_disposisi',$jabatanid)
+        $quert_update_status = 
+        Disposisi::where('tb_disposisi.tujuan_disposisi',$jabatanid)
         ->where('tb_disposisi.id_disposisi',$id)
         ->update([
             'tgl_disposisi_dilihat' => $today
         ]);
 
-         //view pdf Disposisi Memo Masuk
+        //view pdf Disposisi Memo Masuk
+        //Logo
         $query_header = setting::all();
+
         $query_memo = Disposisi::where('id_disposisi',$id)
         ->join('tb_jabatan','tb_disposisi.pengirim_memo','=','tb_jabatan.id')
-        ->join('tb_detail_disposisi','tb_disposisi.id_disposisi','=','tb_detail_disposisi.id_disposisi_detail')
         ->get();
 
         $query_pengirim = Disposisi::where('id_disposisi',$id)
         ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id') 
         ->get();
 
-        $query_tujuan = detailDisposisi::where('id_disposisi_detail',$id)
-        ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')->get();
+        $query_tujuan = Disposisi::where('id_disposisi',$id)
+        ->join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')->get();
 
         //DOM PDF
         $nosurat = "";
@@ -265,21 +278,23 @@ class disposisiController extends Controller
         return $pdf->stream("Disposisi Masuk Memo $nosurat.pdf");
 
     }
+
+     //Disposisi Memo Intern Keluar 
     public function viewdisposisi2($id)
     {
         //view pdf Disposisi Memo Keluar
         $query_header = setting::all();
+
         $query_memo = Disposisi::where('id_disposisi',$id)
         ->join('tb_jabatan','tb_disposisi.pengirim_memo','=','tb_jabatan.id')
-        ->join('tb_detail_disposisi','tb_disposisi.no_surat','=','tb_detail_disposisi.no_surat')
         ->get();
 
         $query_pengirim = Disposisi::where('id_disposisi',$id)
         ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id') 
         ->get();
 
-        $query_tujuan = detailDisposisi::where('id_disposisi_detail',$id)
-        ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')->get();
+        $query_tujuan = Disposisi::where('id_disposisi',$id)
+        ->join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')->get();
 
         
         //DOM PDF
@@ -503,15 +518,14 @@ class disposisiController extends Controller
       $query_header = setting::all();
       $query_memo = Disposisi::where('id_disposisi',$id)
       ->join('tb_jabatan','tb_disposisi.pengirim_memo','=','tb_jabatan.id')
-      ->join('tb_detail_disposisi','tb_disposisi.id_disposisi','=','tb_detail_disposisi.id_disposisi_detail')
       ->get();
 
       $query_pengirim = Disposisi::where('id_disposisi',$id)
       ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id') 
       ->get();
 
-      $query_tujuan = detailDisposisi::where('id_disposisi_detail',$id)
-      ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')->get();
+      $query_tujuan = Disposisi::where('id_disposisi',$id)
+      ->join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')->get();
 
       $query_forward = Forward::where('id_disposisi_frw',$id)
         ->join('tb_jabatan','tb_forward_disposisi.tujuan','=','tb_jabatan.id')
@@ -538,6 +552,8 @@ class disposisiController extends Controller
 
     
     }
+
+    //Forward Disopsisi Memo Mamsuk
     public function viewforward($id)
     {
         $auth = Auth::user()->jabatan_id;
@@ -561,15 +577,14 @@ class disposisiController extends Controller
       $query_header = setting::all();
       $query_memo = Disposisi::where('id_disposisi',$id)
       ->join('tb_jabatan','tb_disposisi.pengirim_memo','=','tb_jabatan.id')
-      ->join('tb_detail_disposisi','tb_disposisi.id_disposisi','=','tb_detail_disposisi.id_disposisi_detail')
       ->get();
 
       $query_pengirim = Disposisi::where('id_disposisi',$id)
       ->join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id') 
       ->get();
 
-      $query_tujuan = detailDisposisi::where('id_disposisi_detail',$id)
-      ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')->get();
+      $query_tujuan = Disposisi::where('id_disposisi',$id)
+      ->join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')->get();
 
       $query_forward = Forward::where('id_disposisi_frw',$id)
         ->join('tb_jabatan','tb_forward_disposisi.tujuan','=','tb_jabatan.id')

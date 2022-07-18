@@ -140,7 +140,8 @@
                                     <a class="dropdown-item" href="/memo-keluar/view/{{$item->id_memo}}" target="_blank">Lihat Memo</a>
                                     <a class="dropdown-item" href="/memo/detail/{{$item->id_memo}}">Detail Memo</a>
                                     @if ($item->id_disposisi != null)
-                                          <a class="dropdown-item" href="/memo/tracking/{{$item->id_disposisi}}">Tindakan Memo</a>
+                                          {{-- <a class="dropdown-item" href="/memo/tracking/{{$item->id_disposisi}}">Tindakan Memo</a> --}}
+                                          <a class="dropdown-item" href="/memo/tracking/{{$item->id_memo}}">Tindakan Memo</a>
                                     @endif
                                   
                                     @if ($item->id_memo_not == null && $item->jns_memo == 'undangan')

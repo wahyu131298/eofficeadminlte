@@ -88,7 +88,7 @@
                                       <small style="color:red">- {{ $message}}</small>
                               @enderror
                           </div>
-                          <div class="col-md-6">
+                          <div class="col-md-6 ">
                               <label for="jabatan">Jabatan</label>
                               <input type="text" class="form-control" id="jabatan" placeholder="jabatan" name="jabatan" value="{{$disposisi->jabatan}}" required readonly>
                               @error('jabatan')
@@ -98,7 +98,7 @@
                       </div>
                       
                       <div class="row">
-                          <div class="col-md-6">
+                          <div class="col-md-6 mt-3">
                               <label for="tgl_memo">Tanggal Memo</label>
                               <input type="text" class="form-control" id="tgl_memo" placeholder="Tanggal Memo" name="tgl_memo" value="{{ $disposisi->tgl_surat}}" required readonly>
                               @error('tgl_memo')
@@ -107,22 +107,28 @@
                           </div>
                       </div>
                       <div class="row">
-                          <div class="col-md-8">
+                          <div class="col-md-8 mt-3">
                               <label for="kepada">Kirim Kepada</label>
-                              <select  id="kepada"  name="kepada[]" class="select2bs4" multiple="multiple" data-placeholder="Select a State"
+                              {{-- <select  id="kepada"  name="kepada[]" class="select2bs4" multiple="multiple" data-placeholder="Select a State"
                               style="width: 100%;">
                                   @foreach ( $user as $users )
                                       <option value="{{$users->jabatan_id}}">{{$users->Nama}} ({{$users->jabatan}})</option>
                                   @endforeach
                                      
-                              </select>
+                              </select> --}}
+
+                            <select class="custom-select mr-sm-2 select2bs4" id="kepada" name="kepada" style="width: 100%;">
+                                @foreach ( $user as $users )
+                                      <option value="{{$users->jabatan_id}}">{{$users->Nama}} ({{$users->jabatan}})</option>
+                                @endforeach
+                            </select>
                               @error('kepada')
                               <small style="color:red">- {{ $message}}</small>
                               @enderror
                           </div>
                       </div>
                       <div class="row">
-                          <div class="col-md-12">
+                          <div class="col-md-12 mt-3">
                               <label for="disposisi">isi Disposisi</label>
                               <textarea class="form-control" name="isi_disposisi"></textarea>
                               @error('disposisi')
@@ -210,7 +216,7 @@
      //Initialize Select2 Elements
      $('.select2bs4').select2({
       theme: 'bootstrap4',
-      maximumSelectionLength: 1
+    //   maximumSelectionLength: 1
     })
   
     });
