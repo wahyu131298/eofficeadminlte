@@ -54,6 +54,28 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal View Lampiran -->
+<div class="modal fade" id="formlampiran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Lampiran Memo</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <form id="viewlampiran">
+              <div class="modal-body">
+                     
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>
 <!-- Content Header (Page header) -->
 <div class="content-header">
     <div class="container-fluid">
@@ -80,8 +102,12 @@
                         <tr>
                             <th>No</th>
                             <th>No Memo</th>
+                            <th>Jenis Memo</th>
                             <th>Perihal</th> 
                             <th>Tanggal Memo</th>
+                            {{-- <th>Kepada</th>
+                            <th>CC</th> --}}
+                           
                             <th>Lampiran</th>
                             <th>Status</th> 
                             <th>Action</th>
@@ -97,13 +123,27 @@
                              --}}
                             <td>{{++$i}}</td>
                             <td>{{ $item->no_surat}}</td>
+                            <td>
+                                @if ($item->jns_memo == 'undangan')
+                                    Undangan
+                                @elseif($item->jns_memo == 'pengajuan')
+                                    Pengajuan
+                                @elseif($item->jns_memo == 'laporan')
+                                    Laporan
+                                @elseif($item->jns_memo == 'lain')
+                                    Lain-Lain
+                                @endif
+                            </td>
                             <td>{{ $item->perihal}}</td>
                             <td>{{ date("d F Y", strtotime($item->tgl_surat))}}</td>
+                            {{-- <td>{{ $item->kepada}}</td>
+                            <td>{{ $item->cc}}</td> --}}
                             <td>
                                 @if ($item->lampiran == null)
                                 <span class="badge badge-dark">Tidak Ada</span>
                                 @else
-                                    <a href="{{ asset('/file/lampiran/')}}/{{$item->lampiran}}" class="badge badge-primary" target="_blank">View</a>
+                                
+                                    <a data-id="{{$item->id_memo}}" href="#" class="badge badge-primary btn-lampiran">Lihat</a>
                                 @endif
                             </td>
                             <td>
@@ -151,9 +191,9 @@
                                         <a data-id="{{$item->id_memo}}" class="dropdown-item btn-edit-notulen" href="#">Edit Notulen</a>
                                         <a class="dropdown-item btn-hapus-notulen" href="/notulen/hapus/{{$item->id_memo}}">Hapus Notulen</a>
                                     @endif
-                                    @if (auth()->user()->level == 'admin')
-                                    <a class="dropdown-item hapusmemo" href="/memo/hapus/{{$item->id_memo}}">Hapus</a>
-                                    @endif
+                                    {{-- @if (auth()->user()->level == 'admin') --}}
+                                    <a class="dropdown-item hapusmemo" href="/memo/hapus/{{$item->id_memo}}">Hapus Memo</a>
+                                    {{-- @endif --}}
                                 </div>  
                             </td>
                         </tr>
@@ -342,6 +382,25 @@ $(document).ready(function(){
            });
         return false;                
     });
+
+    //View Modal Lampiran
+    $('table').on('click','.btn-lampiran',function(){
+            console.log($(this).data('id'))
+            let id = $(this).data('id')
+            
+            $.ajax({
+                url : `/lampiran/view/${id}`,
+                method : 'GET',
+                success : function (data) {
+                    console.log(data)
+                    $('#formlampiran').find('.modal-body').html(data)    
+                    $('#formlampiran').modal('show');
+                },
+                error : function (error) {
+                    console.log(error)    
+                }
+            })
+        });
        
 	 
 

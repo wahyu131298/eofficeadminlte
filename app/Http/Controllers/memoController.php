@@ -11,6 +11,7 @@ use App\Models\Jabatan;
 use App\Models\setting;
 use App\Models\Disposisi;
 use App\Models\Forward;
+use App\Models\Lampiran;
 use Illuminate\Http\Request;
 use Alert;
 use Auth;
@@ -63,11 +64,23 @@ class memoController extends Controller
             'penerima' => 'required',
             'mengetahui' => 'required',
             'isimemo' => 'required',
-            'lampiran.*' => 'mimes:doc,docx,pdf|max:10000'
+            'lampiran.*' => 'mimes:doc,docx,pdf,rar,xlsx,zip,jpg,png,jpeg,xls,|max:8192'
+            // 'lampiran.*' => 'mimes:doc,docx,pdf,rar,xlsx,zip|max:10000'
+        ],
+        [
+            'no_memo.required' => 'Nomor Memo Harus Di isi',
+            'sifat.required' => 'Sifat Harus Di isi',
+            'perihal.required' => 'Perihal Harus Di isi',
+            'kepada.required' => 'Tujuan Memo Harus Di isi',
+            'cc.required' => 'Jika Kosong Isi dengan Tanda - (min)',
+            'penerima.required' => 'Penerima Memo Harus Di isi',
+            'mengetahui.required' => 'Mengetahui Harus Di isi',
+            'isimemo.required' => 'Isi Memo Harus Di isi',
+            'lampiran.mimes:doc,docx,pdf,rar,xlsx,zip,jpg,png,jpeg|max:10000' => 'Format File yang Di Izinkan doc,docx,pdf,rar,xlsx,zip,jpg,png,jpeg dan Size max:10000'
+
         ]);
         if ($request->hasfile('lampiran')) {
-                $filename = round(microtime(true) * 1000).'-'.str_replace(' ','-',$request->file('lampiran')->getClientOriginalName());
-                $request->file('lampiran')->move(public_path('file/lampiran'), $filename);
+               
                 //Kepada
                 $kpd = "";
                 $kepada = $request->input('kepada');
@@ -83,33 +96,44 @@ class memoController extends Controller
                 }
                 $tembusan = substr($tembusan,0,-1);
 
-                //insert to database
-                
-                    $query = memoModel::create([
-                        'id_memo' => $kode_memo,
-                        'jns_memo' => $request->input('kategori'),
-                        'no_surat' => $request->input('no_memo'),
-                        'sifat' => $request->input('sifat'),
-                        'perihal' => $request->input('perihal'),
-                        'jabatan_pengirim' => $jabatanid,
-                        'tgl_surat' => $today,
-                        'isi' => $request->input('isimemo'),
-                        'mengetahui' =>  $request->input('mengetahui'),
-                        'kepada' => $kpd,
-                        'cc' => $tembusan,
-                        'status' => '1',
-                        'lampiran' => $filename
-                    ]);
-                
-                $penerima = $request->input('penerima');
-                foreach ($penerima as $value) {
-                $query = detailkpd::create([
+                //insert ke Tabel Memo
+                $query = memoModel::create([
+                    'id_memo' => $kode_memo,
+                    'jns_memo' => $request->input('kategori'),
                     'no_surat' => $request->input('no_memo'),
-                    'jabatan_id' => $value,
-                    'status' => 'belum',
-                    'id_detail_memo' => $kode_memo
+                    'sifat' => $request->input('sifat'),
+                    'perihal' => $request->input('perihal'),
+                    'jabatan_pengirim' => $jabatanid,
+                    'tgl_surat' => $today,
+                    'isi' => $request->input('isimemo'),
+                    'mengetahui' =>  $request->input('mengetahui'),
+                    'kepada' => $kpd,
+                    'cc' => $tembusan,
+                    'status' => '1',
+                    'lampiran' => 'true'
                     
                 ]);
+
+                //Insert ke Table detail Kepada
+                $penerima = $request->input('penerima');
+                foreach ($penerima as $value) {
+                    $query = detailkpd::create([
+                        'no_surat' => $request->input('no_memo'),
+                        'jabatan_id' => $value,
+                        'status' => 'belum',
+                        'id_detail_memo' => $kode_memo
+                        
+                    ]);
+                }
+                //Insert ke Table Lampiran
+                foreach ($request->file('lampiran') as  $file) {
+                    $filename = round(microtime(true) * 1000).'-'.str_replace(' ','-',$file->getClientOriginalName());
+                    $file->move(public_path('file/lampiran'), $filename);
+                    
+                    $insertfile = Lampiran::create([
+                        'id_memo' => $kode_memo,
+                        'filename' =>  $filename
+                    ]);
                 }
         }else {
             //Kepada
@@ -254,7 +278,16 @@ class memoController extends Controller
         
             
     }
-
+    //Lihat Lampiran
+    public function lihatlampiran($id)
+    {
+        $lampiran = Lampiran::where('id_memo',$id)->get();
+        $data = [
+           
+            'lampiran' => $lampiran
+        ];
+        return view('memo2.masuk.modal-lihat-lampiran',$data);
+    }
     //Menampilkan Tabel Memo Masuk
     public function memoMasuk(Request $request)
     {
@@ -307,7 +340,8 @@ class memoController extends Controller
             ->where('tb_memo.jabatan_pengirim','=',$query)
             ->select('tb_memo.id_memo','tb_memo.no_surat','tb_memo.perihal','tb_memo.tgl_surat','tb_memo.lampiran','tb_memo.status_konfirm',
                      'tb_memo.tgl_konfirm','tb_memo.mengetahui','tb_memo.catatan','tb_disposisi.id_disposisi',
-                     'tb_jabatan.jabatan','tb_notulen.id_memo_not','tb_memo.jns_memo','tb_notulen.isi')
+                     'tb_jabatan.jabatan','tb_notulen.id_memo_not','tb_memo.jns_memo','tb_notulen.isi',
+                     'tb_memo.kepada','tb_memo.cc')
             ->groupBy('tb_memo.id_memo')
             ->Orderby('tb_memo.created_at','desc')
             
@@ -323,11 +357,14 @@ class memoController extends Controller
     {
         $pagination = 5;
         $setting = setting::first();
-        $query_detail1 = detailkpd::join('tb_memo','tb_detail_kepada.id_detail_memo','=','tb_memo.id_memo')
+        $detailmemo = detailkpd::join('tb_memo','tb_detail_kepada.id_detail_memo','=','tb_memo.id_memo')
         ->join('tb_jabatan','tb_detail_kepada.jabatan_id','=','tb_jabatan.id')
         ->join('tb_user','tb_jabatan.id','=','tb_user.jabatan_id')
         ->where('tb_memo.id_memo',$id)
         ->get();
+
+       
+
 
         // $query_detail2 = Disposisi::join('tb_detail_disposisi','tb_disposisi.no_surat','=','tb_detail_disposisi.no_surat')
         // ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')
@@ -346,8 +383,9 @@ class memoController extends Controller
         // ->where('id_disposisi_frw',$id_disposisi)->get();
 
         $data = [
-            'detailMemo' => $query_detail1,
+            'detailMemo' => $detailmemo,
             'logo' => $setting,
+           
             // 'detaildisposisi' => $query_detail2,
             // 'detailfrw' => $forward
         ];
@@ -562,13 +600,17 @@ class memoController extends Controller
         $nama = Auth::user()->Nama;
         $jabatanid = Auth::user()->jabatan_id;
       
-        $query_first= memoModel::where('id_memo',$id)->first();
-        File::delete(public_path('file/lampiran/').$query_first->lampiran);
+        $nomemo = memoModel::where('id_memo',$id)->first();
+        $deletelampirans = Lampiran::where('id_memo',$id)->get();
+        foreach ($deletelampirans as $deletelampiran) {
+            File::delete(public_path('file/lampiran/').$deletelampiran->filename);
+        }
+      
         $query = memoModel::where('id_memo',$id)->delete();
         
          //Membuat Log Baru 
          $namajabatan = Jabatan::where('id',$jabatanid)->first();        
-         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Hapus Memo '. $query_first->no_surat.'');
+         \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Hapus Memo '. $nomemo->no_surat.'');
 
         if ($query) {
             Alert::success('Berhasil...','Memo Berhasil Dihapus');

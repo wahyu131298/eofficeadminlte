@@ -40,43 +40,39 @@
               <!-- /.card-header -->
             <div class="card-body">
                 <table id="example1" class="table table-bordered" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>No Memo</th>
-                            <th>Penerima</th> 
-                            <th>Jabatan</th> 
-                            <th>Tanggal Memo</th> 
-                           
-                            
-                            <th>Status Dilihat</th> 
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach ($detailMemo as $val)
-                        <tr>                         
-                            <td>{{++$i}}</td>
-                            <td>{{ $val->no_surat}}</td>
-                            <td>{{ $val->Nama}}</td>
-                            <td>{{ $val->jabatan}}</td>
-                            <td>{{ date("d F Y", strtotime($val->tgl_surat))}}</td>
-                            
-                            <td>
-                                @if ($val->status == 'sudah')
-                                    <span class="badge badge-success">Sudah Dilihat pada {{ date("d F Y", strtotime($val->tgl_lihat))}}</span>
-                                @else
-                                    <span class="badge badge-danger">Belum Dilihat</span>
-                                @endif                             
-                            </td>
-                        </tr>
-                    @endforeach                                       
-                   </tbody>
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>No Memo</th>
+                      <th>Penerima</th> 
+                      <th>Jabatan</th> 
+                      <th>Tanggal Memo</th>
+                      <th>Status Dilihat</th> 
+                    </tr>
+                  </thead>
+                  <tbody>
+                  @foreach ($detailMemo as $val)
+                    <tr>                         
+                      <td>{{++$i}}</td>
+                      <td>{{ $val->no_surat}}</td>
+                      <td>{{ $val->Nama}}</td>
+                      <td>{{ $val->jabatan}}</td>
+                      <td>{{ date("d F Y", strtotime($val->tgl_surat))}}</td>
+                      <td>
+                        @if ($val->status == 'sudah')
+                            <span class="badge badge-success">Sudah Dilihat pada {{ date("d F Y", strtotime($val->tgl_lihat))}}</span>
+                        @else
+                            <span class="badge badge-danger">Belum Dilihat</span>
+                        @endif                             
+                      </td>
+                    </tr>
+                  @endforeach                                       
+                  </tbody>
                 </table>
-                    
-                 
             <!-- /.card-body -->
-          </div>
+        </div>
           <!-- /.card -->
+        </div>
     </div><!-- /.container-fluid -->
 </section>
 @endsection

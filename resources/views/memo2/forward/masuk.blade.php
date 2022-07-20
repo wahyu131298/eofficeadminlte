@@ -4,7 +4,27 @@
 @section('submain-dis','active')
 @section('masuk-for','active')
 @section('body')
-
+<!-- Modal View Lampiran -->
+<div class="modal fade" id="formlampiran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Lampiran Memo</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <form id="viewlampiran">
+              <div class="modal-body">
+                     
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+      </div>
+    </div>
+</div>
 <!-- Content Header (Page header) -->
 <div class="content-header">
     <div class="container-fluid">
@@ -51,7 +71,7 @@
                                 @if ($item->lampiran == null)
                                 <span class="badge badge-dark">Tidak Ada</span>
                                 @else
-                                    <a href="/file/lampiran/{{$item->lampiran}}" class="badge badge-primary" target="_blank">View</a>
+                                <a data-id="{{$item->id_memo}}" href="#" class="badge badge-primary btn-lampiran">Lihat</a>
                                 @endif
                             </td>
                             <td>
@@ -125,6 +145,25 @@
                 success:function(){
                   
                     location.reload();
+                }
+            })
+        });
+
+        //View Modal Lampiran
+        $('table').on('click','.btn-lampiran',function(){
+            // console.log($(this).data('id'))
+            let id = $(this).data('id')
+            
+            $.ajax({
+                url : `/lampiran/view/${id}`,
+                method : 'GET',
+                success : function (data) {
+                    // console.log(data)
+                    $('#formlampiran').find('.modal-body').html(data)    
+                    $('#formlampiran').modal('show');
+                },
+                error : function (error) {
+                    console.log(error)    
                 }
             })
         });

@@ -31,6 +31,13 @@ Route::get('/memo-keluar/view/{id}','App\Http\Controllers\memoController@cetakme
 Route::get('/memo-disposisi/view/{id}','App\Http\Controllers\memoController@cetakmemokeluar');
 Route::get('/memo/tracking/{id}','App\Http\Controllers\memoController@trackingmemo');
 
+//Hapus Memo
+Route::get('/memo/hapus/{id}','App\Http\Controllers\memoController@hapus');
+
+//Lampiran
+Route::get('/lampiran/view/{id}','App\Http\Controllers\memoController@lihatlampiran');
+
+
 //Notulen
 Route::get('/notulen/view/{id}','App\Http\Controllers\memoController@viewmodal');
 Route::post('/notulen/create','App\Http\Controllers\memoController@createnotulen');
@@ -107,8 +114,7 @@ Route::group(['middleware' => ['auth','ceklogin:admin']], function(){
     Route::get('/user/edit/{id}','App\Http\Controllers\userController@edituser');
     Route::post('/user/update','App\Http\Controllers\userController@updateuser');
 
-    //Hapus Memo
-    Route::get('/memo/hapus/{id}','App\Http\Controllers\memoController@hapus');
+    
 });
 
 //Kabag

@@ -25,6 +25,27 @@
       </div>
     </div>
   </div>
+  <!-- Modal View Lampiran -->
+<div class="modal fade" id="formlampiran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Lampiran Memo</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <form id="viewlampiran">
+              <div class="modal-body">
+                     
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+      </div>
+    </div>
+  </div>
 <!-- Content Header (Page header) -->
 <div class="content-header">
     <div class="container-fluid">
@@ -53,7 +74,6 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th style="display:none" >ID Memo</th>
                             <th>No Memo</th>
                             <th>Dari</th> 
                             <th>Perihal</th> 
@@ -66,7 +86,6 @@
                     @foreach ($konfirm as $item)
                         <tr>                         
                             <td>{{++$i}}</td>
-                            <td style="display:none">{{ $item->id_memo}}</td>
                             <td>{{ $item->no_surat}}</td>
                             <td>{{ $item->jabatan}}</td>
                             <td>{{ $item->perihal}}</td>
@@ -75,13 +94,13 @@
                                 @if ($item->lampiran == null)
                                 <span class="badge badge-dark">Tidak Ada</span>
                                 @else
-                                    <a href="/file/lampiran/{{$item->lampiran}}" class="badge badge-primary" target="_blank">View</a>
+                                    <a data-id="{{$item->id_memo}}" href="#" class="badge badge-primary btn-lampiran">Lihat</a>
                                 @endif
                             </td>
                             <td>  
                                 <button class="btn btn-outline-danger dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Aksi</button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="/konfirmasi-memo/view/{{$item->id_memo}}" target="_blank">Lihat</a>
+                                    <a class="dropdown-item" href="/konfirmasi-memo/view/{{$item->id_memo}}" target="_blank">Lihat Memo</a>
                                     <a class="dropdown-item konfirm" href="/memo/setuju/{{$item->id_memo}}">Setuju</a>
                                     <a data-id="{{$item->id_memo}}" class="dropdown-item btn-tolak" href="#">Tolak</a>
                                 </div>  
@@ -177,22 +196,41 @@
         });
     
         $('table').on('click','.konfirm',function(){
-                    var getLink = $(this).attr('href');
-                    swal.fire({
-                            title: 'Meyetujui Memo ?',
-                            text: 'Yakim Ingin Meyetujui Memo',
-                            icon: 'warning',
-                            confirmButtonText: 'Setuju',
-                            confirmButtonColor: '#d9534f',
-                            showCancelButton: true,
-                            showConfirmButton: true,
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = getLink
-                            }
-                        });
-                    return false;
+            var getLink = $(this).attr('href');
+            swal.fire({
+                    title: 'Meyetujui Memo ?',
+                    text: 'Yakim Ingin Meyetujui Memo',
+                    icon: 'warning',
+                    confirmButtonText: 'Setuju',
+                    confirmButtonColor: '#d9534f',
+                    showCancelButton: true,
+                    showConfirmButton: true,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = getLink
+                    }
                 });
+            return false;
+        });
+
+        //View Modal Lampiran
+        $('table').on('click','.btn-lampiran',function(){
+            console.log($(this).data('id'))
+            let id = $(this).data('id')
+            
+            $.ajax({
+                url : `/lampiran/view/${id}`,
+                method : 'GET',
+                success : function (data) {
+                    console.log(data)
+                    $('#formlampiran').find('.modal-body').html(data)    
+                    $('#formlampiran').modal('show');
+                },
+                error : function (error) {
+                    console.log(error)    
+                }
+            })
+        });
     
     });
     </script>

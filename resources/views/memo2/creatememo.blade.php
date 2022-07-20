@@ -44,9 +44,11 @@
                               <div class="form-group">
                                   <label for="kategori">Jenis Memo</label>
                                   <select class="custom-select mr-sm-2" id="kategori" name="kategori" style="width: 100%;" required>
-                                      <option value="" selected>Pilih...</option>
-                                      <option value="undangan" value="{{old('kategori') == "undangan" ? 'selected' : ''}}">Undangan</option>
-                                      <option value="pengajuan" value="{{old('kategori') == "pengajuan" ? 'selected' : ''}}">Pengajuan</option>
+                                      <option value="" selected>Pilih Jenis Memo</option>
+                                      <option value="undangan" @if (old('kategori') == 'undangan')  ? selected @endif>Undangan</option>
+                                      <option value="pengajuan" @if (old('kategori') == 'pengajuan')  ? selected @endif>Pengajuan</option>
+                                      <option value="laporan" @if (old('kategori') == 'laporan')  ? selected @endif>Laporan</option>
+                                      <option value="lain" @if (old('kategori') == 'lain')  ? selected @endif>Lain-lain</option>
                                     </select>
                                   @error('kategori')
                                           <small style="color:red">- {{ $message}}</small>
@@ -63,10 +65,9 @@
                                   <label for="sifat">Sifat</label>
                                     <select class="custom-select mr-sm-2" id="sifat" name="sifat" style="width: 100%;" required>
                                       <option value="" selected>Pilih...</option>
-                                      <option value="biasa" value="{{old('sifat') == "biasa" ? 'selected' : ''}}">Biasa</option>
-                                      <option value="rahasia" value="{{old('sifat') == "rahasia" ? 'selected' : ''}}">Rahasia</option>
-                                      <option value="terbatas" value="{{old('sifat') == "terbatas" ? 'selected' : ''}}">Terbatas</option>
-                                     
+                                      <option value="biasa" @if (old('sifat') == 'biasa')  ? selected @endif>Biasa</option>
+                                      <option value="rahasia" @if (old('sifat') == 'rahasia')  ? selected @endif>Rahasia</option>
+                                      <option value="terbatas" @if (old('sifat') == 'terbatas')  ? selected @endif>Terbatas</option>
                                     </select>
                                   @error('sifat')
                                    <small style="color:red">- {{ $message}}</small>
@@ -75,7 +76,7 @@
                            </div>
                            <div class="col-md-6">
                                   <label for="perihal">Perihal</label>
-                                  <input type="text" class="form-control" id="perihal" placeholder="Perihal" name="perihal" required>
+                                  <input type="text" class="form-control" id="perihal" placeholder="Perihal" name="perihal" value="{{old('perihal')}}" required>
                                   @error('perihal')
                                           <small style="color:red">- {{ $message}}</small>
                                   @enderror
@@ -154,8 +155,8 @@
                           </div>
                           <div class="row">
                               <div class="col-md-12">
-                                   <label for="isi">Isi Memo</label>
-                                   <textarea id="mytextarea" name="isimemo" style="height: 100%"></textarea>
+                                   <label for="mytextarea">Isi Memo</label>
+                                   <textarea id="mytextarea" name="isimemo" style="height: 100%">{{old('isimemo')}}</textarea>
                                
                               </div>
                           </div>
@@ -165,13 +166,12 @@
                                   <label for="lampiran">Lampiran (Optional) </label>
                                   <div class="input-group">
                                     <div class="custom-file">
-                                      <input type="file" class="custom-file-input" id="exampleInputFile" name="lampiran">
+                                      <input type="file" class="custom-file-input" id="exampleInputFile" name="lampiran[]" multiple>
                                       <label class="custom-file-label" for="exampleInputFile">Choose file</label>
                                     </div>
                                     
                                   </div>
-                                  {{-- <input type="file" class="custom-file-input" id="exampleInputFile" > --}}
-                                  
+                                  {{-- <input type="file" class="form-control" name="lampiran[]"  multiple="multiple"> --}}
                                   @error('lampiran')
                                           <small style="color:red">- {{ $message}}</small>
                                   @enderror

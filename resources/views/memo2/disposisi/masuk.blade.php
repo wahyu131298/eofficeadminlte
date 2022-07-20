@@ -4,6 +4,27 @@
 @section('submain-dis','active')
 @section('masuk-dis','active')
 @section('body')
+<!-- Modal View Lampiran -->
+<div class="modal fade" id="formlampiran" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Lampiran Memo</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <form id="viewlampiran">
+              <div class="modal-body">
+                     
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+      </div>
+    </div>
+</div>
 
 <!-- Content Header (Page header) -->
 <div class="content-header">
@@ -50,10 +71,8 @@
                              <button class="btn btn-outline-danger dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">Aksi</button>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item " href="/memo-disposisi/view/{{$item->id_memo_disposisi}}" title="Lihat Memo" target="_blank">Lihat Memo</a>
-                                    @if ($item->lampiran == null)
-
-                                    @else
-                                        <a class="dropdown-item" href="/file/lampiran/{{$item->lampiran}}" title="Lihat Lampiran" target="_blank">Lihat Lampiran</a>
+                                    @if ($item->lampiran != null)
+                                        <a data-id="{{$item->id_memo}}" class="dropdown-item btn-lampiran" href="#" title="Lihat Lampiran">Lihat Lampiran</a>
                                     @endif
                                     <a class="dropdown-item view-disposisi" href="/disposisi/view/{{$item->id_disposisi}}" target="_blank">Lihat Disposisi</a>
                                     <a class="dropdown-item" href="/disposisi/forward/{{$item->id_disposisi}}">Forward Disposisi</a>
@@ -126,6 +145,26 @@
                 success:function(){
                   
                     location.reload();
+                }
+            })
+        });
+
+        
+        //View Modal Lampiran
+        $('table').on('click','.btn-lampiran',function(){
+            // console.log($(this).data('id'))
+            let id = $(this).data('id')
+            
+            $.ajax({
+                url : `/lampiran/view/${id}`,
+                method : 'GET',
+                success : function (data) {
+                    // console.log(data)
+                    $('#formlampiran').find('.modal-body').html(data)    
+                    $('#formlampiran').modal('show');
+                },
+                error : function (error) {
+                    console.log(error)    
                 }
             })
         });

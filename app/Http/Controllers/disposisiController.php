@@ -169,6 +169,7 @@ class disposisiController extends Controller
             // ->get();
 
             $query_masuk = Disposisi::join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
+            ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
             ->get();
         }else {
             $auth = Auth::user()->jabatan_id;
@@ -182,7 +183,9 @@ class disposisiController extends Controller
             // ->get();
 
             $query_masuk = Disposisi::join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
-            ->where('tb_disposisi.tujuan_disposisi','=',$auth)->get();
+            ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
+            ->where('tb_disposisi.tujuan_disposisi','=',$auth)
+            ->get();
 
 
         }
