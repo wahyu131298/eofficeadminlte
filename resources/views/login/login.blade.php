@@ -84,10 +84,10 @@
 
       {{-- <p class="mb-1">
         <a href="forgot-password.html">I forgot my password</a>
-      </p>
-      <p class="mb-0">
-        <a href="register.html" class="text-center">Register a new membership</a>
       </p> --}}
+      <p class="mt-3 text-center">
+        <a href="#" class="text-center btn-alert">Lupa Password ? / Butuh Bantuan ?</a>
+      </p>
     </div>
     <!-- /.card-body -->
   </div>
@@ -101,5 +101,19 @@
 <script src="{{asset('/plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 <!-- AdminLTE App -->
 <script src="{{asset('/dist/js/adminlte.min.js')}}"></script>
+
+<script>
+  $(document).ready(function($){
+      $('.btn-alert').on('click',function(){
+          swal.fire({
+            icon: 'info',
+            title: 'Butuh Bantun ?',
+            text: 'Apabila Ada Kendala atau Belum Faham Tentang E-Office RSMS Silahkan Hubungi IT RS',
+            // footer: '<a href="">Why do I have this issue?</a>'
+          })
+      }); 
+  });
+
+</script>
 </body>
 </html>
