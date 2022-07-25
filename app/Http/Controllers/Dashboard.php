@@ -64,13 +64,16 @@ class Dashboard extends Controller
                 ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
                 ->where('tb_memo.status_konfirm','2')
                 ->where('tb_detail_kepada.status','belum')
+                ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
                 ->get();
             
             $count_notif_navbar = memoModel::
                 join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
                 ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+               
                 ->where('tb_memo.status_konfirm','2')
                 ->where('tb_detail_kepada.status','belum')
+                ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
                 ->count();
         }else {
             //User Online
@@ -129,6 +132,7 @@ class Dashboard extends Controller
             $notif_navbar = memoModel::
             join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
             ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
             ->where('tb_detail_kepada.jabatan_id',$auth)
             ->where('tb_memo.status_konfirm','2')
             ->where('tb_detail_kepada.status','belum')
@@ -137,6 +141,7 @@ class Dashboard extends Controller
             $count_notif_navbar = memoModel::
             join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
             ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
             ->where('tb_detail_kepada.jabatan_id',$auth)
             ->where('tb_memo.status_konfirm','2')
             ->where('tb_detail_kepada.status','belum')

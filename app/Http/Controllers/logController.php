@@ -27,15 +27,15 @@ class logController extends Controller
         $notif_navbar = memoModel::
         join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
         ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        
+        ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
         ->where('tb_memo.status_konfirm','2')
         ->where('tb_detail_kepada.status','belum')
         ->get();
-        
+    
         $count_notif_navbar = memoModel::
         join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
         ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        
+        ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
         ->where('tb_memo.status_konfirm','2')
         ->where('tb_detail_kepada.status','belum')
         ->count();

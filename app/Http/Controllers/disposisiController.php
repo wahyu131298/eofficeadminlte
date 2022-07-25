@@ -24,6 +24,47 @@ use File;
 
 class disposisiController extends Controller
 {
+    public function __construct()
+    {
+        $this->jabatanid = Auth::user()->jabatan_id;
+
+        if ($this->jabatanid == 'admin') {
+            $this->notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+            $this->count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+        }else {
+            $this->notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
+            ->where('tb_detail_kepada.jabatan_id', $this->jabatanid)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+            $this->count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->select('tb_jabatan.jabatan','tb_memo.jns_memo','tb_memo.no_surat','tb_memo.created_at')
+            ->where('tb_detail_kepada.jabatan_id', $this->jabatanid)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+        }
+        
+    }
     public function index($id)
     {
         $auth = Auth::user()->jabatan_id;
@@ -38,29 +79,13 @@ class disposisiController extends Controller
                             ->whereNotIn('tb_user.jabatan_id', [$auth,'-','admin'])
                             ->get();
 
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
-
         $no = $query->no_surat;
         $data = ['disposisi' => $query,
                 'user' => $query_user,
                 'logo' => $setting,
                 'nomor' => $no,
-                'notif' => $notif_navbar,
-                'countnotif' => $count_notif_navbar,
+                'notif' =>  $this->notif_navbar,
+                'countnotif' => $this->count_notif_navbar
         ];
         return view('memo2.masuk.disposisi',$data);
     }
@@ -104,14 +129,7 @@ class disposisiController extends Controller
                 'isi' => $request->input('isi_disposisi')
                 
             ]);
-            // $kepada = $request->input('kepada');
-            // foreach ($kepada as $value) {
-            //     $query = detailDisposisi::create([
-            //         'id_disposisi_detail' => $kode_disposisi,
-            //         'no_surat' => $request->input('no_memo'),
-            //         'kepada_disposisi' => $value
-            //     ]);
-            // }
+           
             //Membuat Log Baru 
             $namajabatan = Jabatan::where('id',$auth)->first();        
             \LogActivity::addToLog(''.$nama. ' ('.$namajabatan->jabatan.') '.' Disposisi Memo '.$request->input('no_memo').'');
@@ -180,22 +198,6 @@ class disposisiController extends Controller
              $query_masuk = Disposisi::join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
             ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
             ->get();
-
-            $notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->get();
-                
-                $count_notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->count();
         }else {
             $auth = Auth::user()->jabatan_id;
             $query_masuk = Disposisi::join('tb_jabatan','tb_disposisi.pengirim_disposisi','=','tb_jabatan.id')
@@ -203,24 +205,9 @@ class disposisiController extends Controller
             ->where('tb_disposisi.tujuan_disposisi','=',$auth)
             ->get();
 
-            $notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                ->where('tb_detail_kepada.jabatan_id',$auth)
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->get();
-                
-                $count_notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                ->where('tb_detail_kepada.jabatan_id',$auth)
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->count();
         }
-        $data = ['dismasuk' => $query_masuk, 'logo' => $setting, 'notif' => $notif_navbar,
-        'countnotif' => $count_notif_navbar,];
+        $data = ['dismasuk' => $query_masuk, 'logo' => $setting, 'notif' =>  $this->notif_navbar,
+        'countnotif' => $this->count_notif_navbar];
         return view('memo2.disposisi.masuk',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
     public function disposisiKeluar(Request $request)
@@ -231,45 +218,18 @@ class disposisiController extends Controller
         if (Auth::user()->level == 'admin') {
             $query_keluar = Disposisi::join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')
             ->get();
-
-            $notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->get();
-                
-                $count_notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->count();
-
             
         }else {
             $query_keluar = Disposisi::join('tb_jabatan','tb_disposisi.tujuan_disposisi','=','tb_jabatan.id')
             ->where('pengirim_disposisi','=',$auth)->get();
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }
       
-        $data = ['disposisi' => $query_keluar, 'logo' => $setting, 'notif' => $notif_navbar,
-        'countnotif' => $count_notif_navbar,];
+        $data = [   
+                    'disposisi' => $query_keluar, 
+                    'logo' => $setting, 
+                    'notif' =>  $this->notif_navbar,
+                    'countnotif' => $this->count_notif_navbar
+                ];
         return view('memo2.disposisi.keluar',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
     public function detaildisposisi(Request $request, $id)
@@ -287,28 +247,12 @@ class disposisiController extends Controller
         ->where('id_disposisi_frw',$id)
         ->get();
 
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
-
         $data = [
             'detaildisposisi' => $query_detail,
             'detailfrw' => $forward,
             'logo' => $setting,
-            'notif' => $notif_navbar,
-            'countnotif' => $count_notif_navbar,
+            'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar
         ];
         return view('memo2.disposisi.detail',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
@@ -410,27 +354,11 @@ class disposisiController extends Controller
         ->whereNotIn('tb_user.jabatan_id', [$auth,'-','admin'])
         ->get();
 
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
-
         $data = ['disposisi' => $query,
                 'user' => $query_user,
                 'logo' => $setting,
-                'notif' => $notif_navbar,
-                'countnotif' => $count_notif_navbar,
+                'notif' =>  $this->notif_navbar,
+                'countnotif' => $this->count_notif_navbar
         ];
         return view('memo2.forward.forward',$data);
     }
@@ -546,20 +474,6 @@ class disposisiController extends Controller
                     'tb_forward_disposisi.status','tb_forward_disposisi.tgl_dibaca')
             ->Orderby('tb_forward_disposisi.created_at','desc')
             ->get();
-
-            $notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->get();
-                
-                $count_notif_navbar = memoModel::
-                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-                ->where('tb_memo.status_konfirm','2')
-                ->where('tb_detail_kepada.status','belum')
-                ->count();
         }else {
             $query = Forward::where('pengirim',$auth)
             ->join('tb_disposisi','tb_forward_disposisi.id_disposisi_frw','=','tb_disposisi.id_disposisi')
@@ -573,30 +487,14 @@ class disposisiController extends Controller
                     'tb_forward_disposisi.status','tb_forward_disposisi.tgl_dibaca')
             ->Orderby('tb_forward_disposisi.created_at','desc')
             ->get();
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }
         
 
         $data =[
             'forwardkeluar' => $query,
             'logo' => $setting,
-            'notif' => $notif_navbar,
-            'countnotif' => $count_notif_navbar,
+            'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar
 
             
         ];
@@ -613,21 +511,6 @@ class disposisiController extends Controller
             ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
             ->Orderby('tb_forward_disposisi.created_at','desc')
             ->get();
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
-    
         }else {
             $query = Forward::where('tujuan',$auth)
             ->join('tb_disposisi','tb_forward_disposisi.id_disposisi_frw','=','tb_disposisi.id_disposisi')
@@ -635,30 +518,13 @@ class disposisiController extends Controller
             ->join('tb_memo','tb_disposisi.id_memo_disposisi','=','tb_memo.id_memo')
             ->Orderby('tb_forward_disposisi.created_at','desc')
             ->get();
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
-
         }
        
         $data =[
             'forwardmasuk' => $query,
             'logo' => $setting,
-            'notif' => $notif_navbar,
-            'countnotif' => $count_notif_navbar,
+            'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar
 
         ];
         return view('memo2.forward.masuk',$data)->with('i',($request->input('page',1)-1)*$pagination);
@@ -824,28 +690,12 @@ class disposisiController extends Controller
                             // ->where('tb_user.level','kabag')
                             ->whereNotIn('tb_user.jabatan_id', [$jabatanid,'admin'])
                             ->get();
-
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$jabatanid)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$jabatanid)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
        
         $data2 = [
             'user' => $query_user,
             'logo' => $setting,
-            'notif' => $notif_navbar,
-            'countnotif' => $count_notif_navbar,
+            'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar
         ];
         return view('disposisi2.createdisposisi',$data2);
     }
@@ -961,46 +811,15 @@ class disposisiController extends Controller
             $query = Surat::where('pengirim_disposisi',$auth)
             ->Orderby('tb_surat.created_at','desc')
             ->get(); 
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }else {
             $query = Surat::get();
-
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }
        
         $data = [
             'terkirim' => $query, 
             'logo' => $setting, 
-            'notif' => $notif_navbar,
-            'countnotif' => $count_notif_navbar,
+            'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar
         ];
         return view('disposisi2.keluar',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
@@ -1014,23 +833,8 @@ class disposisiController extends Controller
                         ->orderBy('tb_surat.created_at','desc')
                         ->get();
 
-        $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
-        $data = ['masuk' => $query,'logo' => $setting, 'notif' => $notif_navbar,
-        'countnotif' => $count_notif_navbar,
+        $data = ['masuk' => $query,'logo' => $setting, 'notif' =>  $this->notif_navbar,
+        'countnotif' => $this->count_notif_navbar
         ];
        
         return view('disposisi2.masuk',$data)->with('i',($request->input('page',1)-1)*$pagination);
@@ -1115,28 +919,12 @@ class disposisiController extends Controller
         ->whereNotIn('tb_user.jabatan_id', [$auth,'admin'])
         ->get();
 
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
-
         $data = [
                 'surat' => $query,
                 'user' => $query_user,
                 'logo' => $setting,
-                'notif' => $notif_navbar,
-                'countnotif' => $count_notif_navbar,
+                'notif' =>  $this->notif_navbar,
+                'countnotif' => $this->count_notif_navbar
 
             ];
         return view('disposisi2.forward',$data);
@@ -1260,51 +1048,20 @@ class disposisiController extends Controller
             ->orderBy('tb_forward_surat.created_at','desc')
             ->get();
 
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }else {
             $query = Forwardsurat::join('tb_jabatan','tb_forward_surat.penerima','=','tb_jabatan.id')
             ->join('tb_surat','tb_forward_surat.id_surat','=','tb_surat.id_surat')
             ->where('tb_forward_surat.pengirim',$auth)
             ->orderBy('tb_forward_surat.created_at','desc')
             ->get();
-
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }
        
 
         $data = [
             'keluar' => $query ,
             'logo' => $setting,
-            'notif' => $notif_navbar,
-            'countnotif' => $count_notif_navbar,
+            'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar
             
         ];
         return view('disposisi2.forward.keluar',$data)->with('i',($request->input('page',1)-1)*$pagination);
@@ -1321,21 +1078,6 @@ class disposisiController extends Controller
             ->orderBy('tb_forward_surat.created_at','desc')
             ->get();
 
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }else {
             $query = Forwardsurat::join('tb_jabatan','tb_forward_surat.pengirim','=','tb_jabatan.id')
             ->join('tb_surat','tb_forward_surat.id_surat','=','tb_surat.id_surat')
@@ -1343,26 +1085,11 @@ class disposisiController extends Controller
             ->orderBy('tb_forward_surat.created_at','desc')
             ->get();
 
-            $notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->get();
-            
-            $count_notif_navbar = memoModel::
-            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-            ->where('tb_detail_kepada.jabatan_id',$auth)
-            ->where('tb_memo.status_konfirm','2')
-            ->where('tb_detail_kepada.status','belum')
-            ->count();
         }
        
 
-        $data = ['masuk' => $query , 'logo' => $setting, 'notif' => $notif_navbar,
-        'countnotif' => $count_notif_navbar,
+        $data = ['masuk' => $query , 'logo' => $setting, 'notif' =>  $this->notif_navbar,
+        'countnotif' => $this->count_notif_navbar
         ];
         return view('disposisi2.forward.masuk',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
@@ -1380,26 +1107,8 @@ class disposisiController extends Controller
         ->join('tb_user','tb_forward_surat.penerima','=','tb_user.jabatan_id')
         ->get();
 
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_detail_kepada.jabatan_id',$auth)
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
-
-        
-        
-        $data =  ['disampaikan' => $disampaikan,'forward'=>$forward, 'logo' => $setting, 'notif' => $notif_navbar,
-        'countnotif' => $count_notif_navbar,];
+        $data =  ['disampaikan' => $disampaikan,'forward'=>$forward, 'logo' => $setting,'notif' =>  $this->notif_navbar,
+            'countnotif' => $this->count_notif_navbar];
         return view('disposisi2.detailterkirim',$data);
     }
 
@@ -1515,24 +1224,8 @@ class disposisiController extends Controller
         ,'tb_forward_surat.tgl_forward','tb_forward_surat.tgl_dibaca','tb_surat.file','tb_forward_surat.id_surat','tb_forward_surat.id_forward')
         ->get();
 
-        $notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->get();
-        
-        $count_notif_navbar = memoModel::
-        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
-        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        
-        ->where('tb_memo.status_konfirm','2')
-        ->where('tb_detail_kepada.status','belum')
-        ->count();
-
-        $data = ['terkirim' => $query, 'logo' => $setting, 'notif' => $notif_navbar,
-        'countnotif' => $count_notif_navbar,];
+        $data = ['terkirim' => $query, 'logo' => $setting, 'notif' =>  $this->notif_navbar,
+        'countnotif' => $this->count_notif_navbar];
         return view('disposisi2.forward.terkirim',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
 
