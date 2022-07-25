@@ -67,7 +67,7 @@
                           {{-- <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span> --}}
                         </h3>
                         <p class="text-sm">Mengirim Memo Intern ({{$item->jns_memo}}) {{$item->no_surat}}</p>
-                        <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> {{ Carbon\Carbon::parse($item->created_at)->diffForHumans() }}</p>
+                        <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> {{$item->created_at}}</p>
                       </div>
                     </div>
                     
