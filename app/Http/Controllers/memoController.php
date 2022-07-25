@@ -38,12 +38,30 @@ class memoController extends Controller
         $query_user = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->whereNotIn('tb_jabatan.id', [$jabatanid,'-','admin'])->get();
         // $query_bagian = User::leftJoin('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->where('nip', $query)->get();
        
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$jabatanid)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+        $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$jabatanid)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
         $data2 = [
             'mengetahui' => $query_mengetahui,
             // 'bagian' => $query_bagian
             'jabatan' =>  $query_jabatan,
             'user' => $query_user,
-            'logo' => $setting
+            'logo' => $setting,
+            'notif' => $notif_navbar,
+            'countnotif' => $count_notif_navbar,
         ];
         return view('memo2.creatememo',$data2);
     }
@@ -79,7 +97,8 @@ class memoController extends Controller
             'lampiran.mimes:doc,docx,pdf,rar,xlsx,zip,jpg,png,jpeg|max:10000' => 'Format File yang Di Izinkan doc,docx,pdf,rar,xlsx,zip,jpg,png,jpeg dan Size max:10000'
 
         ]);
-        if ($request->hasfile('lampiran')) {
+        if ($request->input('mengetahui') != '-') {
+            if ($request->hasfile('lampiran')) {
                
                 //Kepada
                 $kpd = "";
@@ -109,7 +128,7 @@ class memoController extends Controller
                     'mengetahui' =>  $request->input('mengetahui'),
                     'kepada' => $kpd,
                     'cc' => $tembusan,
-                    'status' => '1',
+                    'status_konfirm' => '1',
                     'lampiran' => 'true'
                     
                 ]);
@@ -135,47 +154,147 @@ class memoController extends Controller
                         'filename' =>  $filename
                     ]);
                 }
+            }else {
+                //Kepada
+                $kpd = "";
+                $kepada = $request->input('kepada');
+                foreach($kepada as $value){
+                    $kpd .= "$value". ",";
+                }
+                $kpd = substr($kpd,0,-1);
+                //Tembusan
+                $tembusan="";
+                $cc = $request->input('cc');
+                foreach ($cc as $value) {
+                    $tembusan .= "$value". ",";
+                }
+                $tembusan = substr($tembusan,0,-1);
+                //insert to database
+                $query = memoModel::create([
+                    'id_memo' => $kode_memo,
+                    'jns_memo' => $request->input('kategori'),
+                    'no_surat' => $request->input('no_memo'),
+                    'sifat' => $request->input('sifat'),
+                    'perihal' => $request->input('perihal'),
+                    'jabatan_pengirim' => $jabatanid,
+                    'tgl_surat' => $today,
+                    'isi' => $request->input('isimemo'),
+                    'mengetahui' => $request->input('mengetahui'),
+                    'kepada' => $kpd,
+                    'cc' => $tembusan,
+                    'status_konfirm' => '1',
+                ]);
+                $penerima = $request->input('penerima');
+                foreach ($penerima as $value) {
+                $query = detailkpd::create([
+                    'no_surat' => $request->input('no_memo'),
+                    'jabatan_id' => $value, 
+                    'status' => 'belum',
+                    'id_detail_memo' => $kode_memo
+                    
+                ]);
+                }
+            }
         }else {
-            //Kepada
-            $kpd = "";
-            $kepada = $request->input('kepada');
-            foreach($kepada as $value){
-                $kpd .= "$value". ",";
-            }
-            $kpd = substr($kpd,0,-1);
-            //Tembusan
-            $tembusan="";
-            $cc = $request->input('cc');
-            foreach ($cc as $value) {
-                $tembusan .= "$value". ",";
-            }
-            $tembusan = substr($tembusan,0,-1);
-            //insert to database
-            $query = memoModel::create([
-                'id_memo' => $kode_memo,
-                'jns_memo' => $request->input('kategori'),
-                'no_surat' => $request->input('no_memo'),
-                'sifat' => $request->input('sifat'),
-                'perihal' => $request->input('perihal'),
-                'jabatan_pengirim' => $jabatanid,
-                'tgl_surat' => $today,
-                'isi' => $request->input('isimemo'),
-                'mengetahui' => $request->input('mengetahui'),
-                'kepada' => $kpd,
-                'cc' => $tembusan,
-                'status' => '1',
-            ]);
-            $penerima = $request->input('penerima');
-            foreach ($penerima as $value) {
-            $query = detailkpd::create([
-                'no_surat' => $request->input('no_memo'),
-                'jabatan_id' => $value, 
-                'status' => 'belum',
-                'id_detail_memo' => $kode_memo
-                
-            ]);
+            if ($request->hasfile('lampiran')) {
+               
+                //Kepada
+                $kpd = "";
+                $kepada = $request->input('kepada');
+                foreach($kepada as $value){
+                    $kpd .= "$value". ",";
+                }
+                $kpd = substr($kpd,0,-1);
+                //Tembusan
+                $tembusan="";
+                $cc = $request->input('cc');
+                foreach ($cc as $value) {
+                    $tembusan .= "$value". ",";
+                }
+                $tembusan = substr($tembusan,0,-1);
+
+                //insert ke Tabel Memo
+                $query = memoModel::create([
+                    'id_memo' => $kode_memo,
+                    'jns_memo' => $request->input('kategori'),
+                    'no_surat' => $request->input('no_memo'),
+                    'sifat' => $request->input('sifat'),
+                    'perihal' => $request->input('perihal'),
+                    'jabatan_pengirim' => $jabatanid,
+                    'tgl_surat' => $today,
+                    'isi' => $request->input('isimemo'),
+                    'mengetahui' =>  $request->input('mengetahui'),
+                    'kepada' => $kpd,
+                    'cc' => $tembusan,
+                    'status_konfirm' => '2',
+                    'lampiran' => 'true'
+                    
+                ]);
+
+                //Insert ke Table detail Kepada
+                $penerima = $request->input('penerima');
+                foreach ($penerima as $value) {
+                    $query = detailkpd::create([
+                        'no_surat' => $request->input('no_memo'),
+                        'jabatan_id' => $value,
+                        'status' => 'belum',
+                        'id_detail_memo' => $kode_memo
+                        
+                    ]);
+                }
+                //Insert ke Table Lampiran
+                foreach ($request->file('lampiran') as  $file) {
+                    $filename = round(microtime(true) * 1000).'-'.str_replace(' ','-',$file->getClientOriginalName());
+                    $file->move(public_path('file/lampiran'), $filename);
+                    
+                    $insertfile = Lampiran::create([
+                        'id_memo' => $kode_memo,
+                        'filename' =>  $filename
+                    ]);
+                }
+            }else {
+                //Kepada
+                $kpd = "";
+                $kepada = $request->input('kepada');
+                foreach($kepada as $value){
+                    $kpd .= "$value". ",";
+                }
+                $kpd = substr($kpd,0,-1);
+                //Tembusan
+                $tembusan="";
+                $cc = $request->input('cc');
+                foreach ($cc as $value) {
+                    $tembusan .= "$value". ",";
+                }
+                $tembusan = substr($tembusan,0,-1);
+                //insert to database
+                $query = memoModel::create([
+                    'id_memo' => $kode_memo,
+                    'jns_memo' => $request->input('kategori'),
+                    'no_surat' => $request->input('no_memo'),
+                    'sifat' => $request->input('sifat'),
+                    'perihal' => $request->input('perihal'),
+                    'jabatan_pengirim' => $jabatanid,
+                    'tgl_surat' => $today,
+                    'isi' => $request->input('isimemo'),
+                    'mengetahui' => $request->input('mengetahui'),
+                    'kepada' => $kpd,
+                    'cc' => $tembusan,
+                    'status_konfirm' => '2',
+                ]);
+                $penerima = $request->input('penerima');
+                foreach ($penerima as $value) {
+                $query = detailkpd::create([
+                    'no_surat' => $request->input('no_memo'),
+                    'jabatan_id' => $value, 
+                    'status' => 'belum',
+                    'id_detail_memo' => $kode_memo
+                    
+                ]);
+                }
             }
         }
+        
 
         //Membuat Log Baru 
         $namajabatan = Jabatan::where('id',$jabatanid)->first();        
@@ -301,6 +420,20 @@ class memoController extends Controller
             ->groupBy('tb_memo.id_memo')
             ->Orderby('tb_memo.created_at','desc')
             ->get();
+
+            $notif_navbar = memoModel::
+                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+                ->where('tb_memo.status_konfirm','2')
+                ->where('tb_detail_kepada.status','belum')
+                ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
         }else {
             $query = Auth::user()->jabatan_id;
             $query_memomasuk = memoModel::
@@ -313,12 +446,33 @@ class memoController extends Controller
             ->orwhere('tb_detail_kepada.jabatan_id',$query)
             ->where('tb_memo.mengetahui','=','-')
             ->where('tb_memo.status_konfirm','=','1')
-            
             ->Orderby('tb_memo.created_at','desc')
             ->get();
+
+            $notif_navbar = memoModel::
+                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+                ->where('tb_detail_kepada.jabatan_id',$query)
+                ->where('tb_memo.status_konfirm','2')
+                ->where('tb_detail_kepada.status','belum')
+                ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$query)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
         }
         
-        $data = ['memomasuk' => $query_memomasuk, 'logo' => $setting];
+        $data = [
+            'memomasuk' => $query_memomasuk, 
+            'logo' => $setting,
+            'notif' => $notif_navbar,
+            'countnotif' => $count_notif_navbar,
+
+        ];
         return view('memo2.masuk.view',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
 
@@ -332,6 +486,20 @@ class memoController extends Controller
             ->leftjoin('tb_notulen','tb_memo.id_memo','=','tb_notulen.id_memo_not')
             ->Orderby('tb_memo.created_at','desc')
             ->get();
+
+            $notif_navbar = memoModel::
+                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+                ->where('tb_memo.status_konfirm','2')
+                ->where('tb_detail_kepada.status','belum')
+                ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
         }else {
             $query = Auth::user()->jabatan_id;
             $query_keluar = memoModel::join('tb_jabatan','tb_memo.mengetahui','=','tb_jabatan.id')
@@ -344,11 +512,27 @@ class memoController extends Controller
                      'tb_memo.kepada','tb_memo.cc')
             ->groupBy('tb_memo.id_memo')
             ->Orderby('tb_memo.created_at','desc')
-            
             ->get();
+
+            $notif_navbar = memoModel::
+                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+                ->where('tb_detail_kepada.jabatan_id',$query)
+                ->where('tb_memo.status_konfirm','2')
+                ->where('tb_detail_kepada.status','belum')
+                ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$query)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
         }
        
-        $data = ['memokeluar' => $query_keluar, 'logo' => $setting];
+        $data = ['memokeluar' => $query_keluar, 'logo' => $setting,  'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar,];
         return view('memo2.keluar.view',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
 
@@ -357,37 +541,34 @@ class memoController extends Controller
     {
         $pagination = 5;
         $setting = setting::first();
+        $query = Auth::user()->jabatan_id;
         $detailmemo = detailkpd::join('tb_memo','tb_detail_kepada.id_detail_memo','=','tb_memo.id_memo')
         ->join('tb_jabatan','tb_detail_kepada.jabatan_id','=','tb_jabatan.id')
         ->join('tb_user','tb_jabatan.id','=','tb_user.jabatan_id')
         ->where('tb_memo.id_memo',$id)
         ->get();
 
-       
-
-
-        // $query_detail2 = Disposisi::join('tb_detail_disposisi','tb_disposisi.no_surat','=','tb_detail_disposisi.no_surat')
-        // ->join('tb_jabatan','tb_detail_disposisi.kepada_disposisi','=','tb_jabatan.id')
-        // ->join('tb_user','tb_jabatan.id','=','tb_user.jabatan_id')
-        // ->where('tb_disposisi.id_memo_disposisi','=',$id)
-        // ->get();
-
-        // $id_dis = "";
-        // foreach ($query_detail2 as $val) {
-        //     $id_dis .= $val->id_disposisi;
-        // }
-        // $id_disposisi = $id_dis;
-
-        // $forward = Forward::join('tb_detail_forward','tb_forward_disposisi.id_forward','=','tb_detail_forward.id_forward')
-        // ->join('tb_jabatan','tb_detail_forward.tujuan_disposisi','=','tb_jabatan.id')
-        // ->where('id_disposisi_frw',$id_disposisi)->get();
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$query)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+        $count_notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+        ->where('tb_detail_kepada.jabatan_id',$query)
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->count();
 
         $data = [
             'detailMemo' => $detailmemo,
             'logo' => $setting,
-           
-            // 'detaildisposisi' => $query_detail2,
-            // 'detailfrw' => $forward
+            'notif' => $notif_navbar,
+            'countnotif' => $count_notif_navbar,
         ];
         return view('memo2.keluar.detail',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
@@ -396,19 +577,40 @@ class memoController extends Controller
     public function konfirm(Request $request)
     {
         $pagination = 5;
-        $query = Auth::user()->jabatan_id;
+        $auth = Auth::user()->jabatan_id;
         $setting = setting::first();
         $query_konfirm = memoModel::join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
         ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
-        ->where('tb_memo.mengetahui',$query)
+        ->where('tb_memo.mengetahui',$auth)
         ->where('tb_memo.status_konfirm','=','1')
         ->groupBy('tb_memo.id_memo')
         ->Orderby('tb_memo.created_at','desc')
         ->get();
 
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$auth)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$auth)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
        
 
-        $data = ['konfirm' => $query_konfirm, 'logo' => $setting];
+        $data = [
+                'konfirm' => $query_konfirm, 
+                'logo' => $setting,
+                'notif' => $notif_navbar,
+                'countnotif' => $count_notif_navbar
+        ];
         return view('memo2.korfirmasi',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
 
@@ -712,6 +914,7 @@ class memoController extends Controller
     public function trackingmemo(Request $request, $id)
     {
         $pagination = 5;
+        $auth = Auth::user()->jabatan_id;
         $setting = setting::first();
         // $query_detail = Disposisi::join('tb_detail_disposisi','tb_disposisi.id_disposisi','=','tb_detail_disposisi.id_disposisi_detail')
         // ->join('tb_jabatan as penerimadis','tb_detail_disposisi.kepada_disposisi','=','penerimadis.id')
@@ -737,6 +940,25 @@ class memoController extends Controller
         ->select('tb_forward_disposisi.no_surat','pengirimfor.jabatan as pengirim','tb_user.Nama','tujuanfor.jabatan as jabatan','tb_forward_disposisi.tgl_dibaca')
         ->where('tb_disposisi.id_memo_disposisi',$id)->get();
 
+
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$auth)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$auth)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
+        
+
         $nomor ="";
         foreach ($query_detail as $value) {
             $nomor .= $value->no_surat;
@@ -747,7 +969,9 @@ class memoController extends Controller
             'nomor' => $no,
             'detaildisposisi' => $query_detail,
             'detailfrw' => $forward,
-            'logo' => $setting
+            'logo' => $setting,
+            'notif' => $notif_navbar,
+            'countnotif' => $count_notif_navbar,
         ];
         return view('memo2.keluar.tindakan',$data);
     }

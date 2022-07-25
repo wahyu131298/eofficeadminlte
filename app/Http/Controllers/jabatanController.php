@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\setting;
 use App\Models\Jabatan;
+use App\Models\memoModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Haruncpi\LaravelIdGenerator\IdGenerator;
@@ -18,9 +19,27 @@ class jabatanController extends Controller
         $pagination = 5;
         $query = Jabatan::get();
         // $data = ['jabatan' => $query,'kode' => $kode_jabatan,'logo'=> $setting];
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+          
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+        
         $data = [
                     'jabatan' => $query,
-                    'logo'=> $setting
+                    'logo'=> $setting,
+                    'notif' => $notif_navbar,
+                    'countnotif' => $count_notif_navbar,
                 ];
         return view('jabatan2.listjabatan',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }

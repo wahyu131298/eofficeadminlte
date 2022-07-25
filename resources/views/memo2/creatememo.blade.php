@@ -91,7 +91,7 @@
                                       style="width: 100%;">
                                          
                                           @foreach ( $jabatan as $item )
-                                               <option value="{{$item->jabatan}}">{{$item->jabatan}}</option>
+                                               <option data-id="{{$item->id}}" value="{{$item->jabatan}}">{{$item->jabatan}}</option>
                                           @endforeach
                                       </select>
                                   @error('kepada')
@@ -105,8 +105,9 @@
                                   <label for="cc">Tembusan</label>
                                       <select id="cc" name="cc[]" class="select2bs4" multiple="multiple" data-placeholder="Tembusan / CC"
                                       style="width: 100%;">
+                                      <option value="-">-</option>
                                           @foreach ( $jabatan as $item )
-                                              <option value="{{$item->jabatan}}">{{$item->jabatan}}</option>
+                                              <option data-id="{{$item->id}}" value="{{$item->jabatan}}">{{$item->jabatan}}</option>
                                           @endforeach
                                          
                                       </select>
@@ -182,6 +183,7 @@
                       <!-- /.card-body -->
                       <div class="card-footer">
                         <button type="submit" class="btn btn-danger" name="kirim">Kirim</button>
+                    
                       </div>
                   </form>
             </div>
@@ -213,39 +215,48 @@
             toolbar: 'undo redo | a11ycheck casechange blocks | fontfamily fontsize lineheight bold underline italic | alignleft aligncenter alignright alignjustify |' +
             'bullist numlist checklist outdent indent | removeformat | table'
   });
-  </script>
-<script>
-     bsCustomFileInput.init();
-    // $(document).ready(function() {
-    //     $('.js-example-basic-multiple').select2();
+</script>
 
-    //     $(".kepada").select2({
-    //         placeholder: "Kepada"
-    //     });
-    //     $(".cc").select2({
-    //         placeholder: "CC"
-    //     });
-    //     $(".penerima").select2({
-    //         placeholder: "Pilih Yang Di Input di Kepada dan Tembusan/CC"
-    //     });
-    // });
-    // //Initialize Select2 Elements
-    // $('.select2bs4').select2({
-    //   theme: 'bootstrap4'
-    // });
-</script> 
 <script>
-   
-      //Initialize Select2 Elements
-      $('.select2').select2()
+  bsCustomFileInput.init();
   
-      //Initialize Select2 Elements
-      $('.select2bs4').select2({
-        theme: 'bootstrap4',
-        
-      })
+  //Initialize Select2 Elements
+  $('.select2').select2()
+
+  //Initialize Select2 Elements
+  $('.select2bs4').select2({
+    theme: 'bootstrap4',
+    
+  })
+
+  // $('#kepada').select2({
+  //   theme: 'bootstrap4',
+  //   insertTag: function (data, tag) {
+  //     // Insert the tag at the end of the results
+  //     data.push(tag);
+  //   }
+  // });
   
       
-  </script>
+  // $(document).ready(function () {
+  //   const tampung_array = [];
+  //   $('#kepada').on('change', function(){
+  //     const data = $("#kepada option:selected").attr('data-id')
+   
+  //     tampung_array.push(data)
+  //     const dat = $("#penerima").val(tampung_array);
+
+  //     // const tes = []
+  //     // tes.push(dat)
+
+  //     // console.log(data)
+
+  //   })
+     
+      
+  // })  
+
+  
+</script>
 
 @endpush

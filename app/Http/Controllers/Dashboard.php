@@ -58,6 +58,20 @@ class Dashboard extends Controller
             $query_forward_terkirim = Forwardsurat::count();
             //Forward Terkirim
             $query_forward_masuk = Forwardsurat::count();
+
+            $notif_navbar = memoModel::
+                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+                ->where('tb_memo.status_konfirm','2')
+                ->where('tb_detail_kepada.status','belum')
+                ->get();
+            
+            $count_notif_navbar = memoModel::
+                join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+                ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+                ->where('tb_memo.status_konfirm','2')
+                ->where('tb_detail_kepada.status','belum')
+                ->count();
         }else {
             //User Online
             $users = User::whereNotNull('last_seen')->whereNotIn('jabatan_id',[$auth])->orderBy('last_seen', 'DESC')->get();
@@ -107,6 +121,26 @@ class Dashboard extends Controller
             $query_forward_masuk = Forwardsurat::join('tb_jabatan','tb_forward_surat.pengirim','=','tb_jabatan.id')
             ->join('tb_surat','tb_forward_surat.id_surat','=','tb_surat.id_surat')
             ->where('tb_forward_surat.penerima',$auth)->count();
+            
+            $query_konfirm = memoModel::where('tb_memo.mengetahui',$auth)
+            ->where('tb_memo.status_konfirm',1)
+            ->count();
+
+            $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$auth)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+        
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_detail_kepada.jabatan_id',$auth)
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
         }
 
        
@@ -124,6 +158,8 @@ class Dashboard extends Controller
             'forwardmasuk' => $query_forward_masuk,
             'forwardmemomasuk' => $forwardmemomasuk,
             'forwardmemokeluar' => $forwardmemokeluar,
+            'notif' => $notif_navbar,
+            'countnotif' => $count_notif_navbar,
             'online' => $users,
             'logo' => $setting
         ];

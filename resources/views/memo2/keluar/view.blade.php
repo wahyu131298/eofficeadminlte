@@ -147,12 +147,12 @@
                                 @endif
                             </td>
                             <td>
-                                @if ($item->status_konfirm == '2')
+                                @if ($item->status_konfirm == '2' && $item->mengetahui != '-')
                                     <span class="badge badge-success">Disetujui oleh <br>
                                         {{$item->jabatan}} <br>
                                          pada {{ date("d F Y", strtotime($item->tgl_konfirm))}}</span>
                                 @endif
-                                @if ($item->status_konfirm == '1' && $item->mengetahui == '-')
+                                @if ($item->status_konfirm == '2' && $item->mengetahui == '-')
                                      <span class="badge badge-success">Tidak Membutuhkan Konfirmasi</span>
                                 
                                 @elseif($item->status_konfirm == '1' && $item->mengetahui != '-')
@@ -179,10 +179,10 @@
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" href="/memo-keluar/view/{{$item->id_memo}}" target="_blank">Lihat Memo</a>
                                     <a class="dropdown-item" href="/memo/detail/{{$item->id_memo}}">Detail Memo</a>
-                                    @if ($item->id_disposisi != null)
+                                    {{-- @if ($item->id_disposisi != null) --}}
                                           {{-- <a class="dropdown-item" href="/memo/tracking/{{$item->id_disposisi}}">Tindakan Memo</a> --}}
                                           <a class="dropdown-item" href="/memo/tracking/{{$item->id_memo}}">Tindakan Memo</a>
-                                    @endif
+                                    {{-- @endif --}}
                                   
                                     @if ($item->id_memo_not == null && $item->jns_memo == 'undangan')
                                         <a data-id="{{$item->id_memo}}" class="dropdown-item btn-notulen" href="#">Tambah Notulen</a>

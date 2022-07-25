@@ -21,12 +21,28 @@ class logController extends Controller
     {
         $pagination = 5;
         $setting = setting::first();
-        // $query = Log::join('tb_jabatan','tb_log.id_jabatan','=','tb_jabatan.id')
-        //                 ->orderBy('tb_log.jam','desc')
-        //                 ->get();
+       
         $query_log = LogActivity::orderBy('created_at','desc')->get();
+        
+        $notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+        
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->get();
+        
+        $count_notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+        
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->count();
 
-        $data = ['log'=> $query_log,'logo'=> $setting];
+        $data = ['log'=> $query_log,'logo'=> $setting, 'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar,
+        ];
         return view('logaktivity',$data)->with('i',($request->input('page',1)-1)*$pagination);
     }
 }

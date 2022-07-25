@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\setting;
+use App\Models\memoModel;
 use Illuminate\Http\Request;
 use Alert;
 
@@ -48,13 +49,50 @@ class settingController extends Controller
    public function setting()
    {
       $query = setting::first();
-      $data = ['edit'=>$query ,'logo'=>$query];
+
+      $notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+      
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->get();
+        
+        $count_notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+       
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->count();
+
+      $data = ['edit'=>$query ,'logo'=>$query, 'notif' => $notif_navbar,
+      'countnotif' => $count_notif_navbar,
+      ];
       return view('setting.setting2',$data);
    }
    public function edit($id)
    {
       $query = setting::where('id_setting',$id)->first();
-      $data = ['settingedit'=>$query ,'logo'=>$query];
+
+      $notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+      
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->get();
+        
+        $count_notif_navbar = memoModel::
+        join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+        ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+       
+        ->where('tb_memo.status_konfirm','2')
+        ->where('tb_detail_kepada.status','belum')
+        ->count();
+
+      $data = ['settingedit'=>$query ,'logo'=>$query, 'notif' => $notif_navbar,
+      'countnotif' => $count_notif_navbar];
       return view('setting.editsetting2',$data);
    }
 

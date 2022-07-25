@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Jabatan;
 use App\Models\setting;
+use App\Models\memoModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,14 +23,54 @@ class userController extends Controller
         $setting = setting::first();
         $pagination = 5;
         $query_user = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->get();
-        $data_user = ['getuser' => $query_user, 'logo'=> $setting];
+
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+          
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+           
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
+
+        $data_user = ['getuser' => $query_user, 'logo'=> $setting , 'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar];
         return view('user2.listuser',$data_user)->with('i',($request->input('page',1)-1)*$pagination);
     }
     public function tambah_user()
     {
         $setting = setting::first();
         $query = Jabatan::get();
-        $data = ['getjabatan' => $query,'logo'=> $setting];
+
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+          
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+           
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
+        
+
+        
+        $data = ['getjabatan' => $query,'logo'=> $setting, 'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar];
         return view('user2.createuser',$data);
     }
     
@@ -116,8 +157,25 @@ class userController extends Controller
         $query = Jabatan::get();
         $setting = setting::first();
         $query2 = User::where('id_user',$id)->first();
-        $data = ['getjabatan' => $query,'user' => $query2,'logo' => $setting];
-       
+
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+          
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+           
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
+        $data = ['getjabatan' => $query,'user' => $query2,'logo' => $setting, 'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar];
         return view('user2.edituser',$data);
     }
     public function updateuser(Request $request)
@@ -223,14 +281,48 @@ class userController extends Controller
     {
         $setting = setting::first();
         $query = Auth::user()->nip;
-        $query_user = User::leftJoin('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->where('nip', $query)->get();
-        $data_user = ['getprofile' => $query_user,'logo'=> $setting];
+        $query_user = User::leftJoin('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')
+        ->where('nip', $query)
+        ->get();
+
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
+        $data_user = ['getprofile' => $query_user,'logo'=> $setting, 'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar];
         return view('user2.profile',$data_user);
     }
     public function gantipsw()
     {
         $setting = setting::first();
-        $data = ['logo'=> $setting];
+
+        $notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->get();
+            
+            $count_notif_navbar = memoModel::
+            join('tb_detail_kepada','tb_memo.id_memo','=','tb_detail_kepada.id_detail_memo')
+            ->join('tb_jabatan','tb_memo.jabatan_pengirim','=','tb_jabatan.id')
+            ->where('tb_memo.status_konfirm','2')
+            ->where('tb_detail_kepada.status','belum')
+            ->count();
+
+        $data = ['logo'=> $setting, 'notif' => $notif_navbar,
+        'countnotif' => $count_notif_navbar];
         return view('user2.gantipsw',$data);
     }
     public function updatepsw(Request $request)
