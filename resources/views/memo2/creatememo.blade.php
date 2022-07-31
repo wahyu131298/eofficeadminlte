@@ -102,15 +102,16 @@
                            <div class="col-md-6">
                               
                               <div class="form-group">
-                                  <label for="cc">Tembusan</label>
+                                  <label for="cc">Tembusan <small><code>*Jika Tembusan KOSONG maka Isi / Pilih "-"</code></small></label>
                                       <select id="cc" name="cc[]" class="select2bs4" multiple="multiple" data-placeholder="Tembusan / CC"
                                       style="width: 100%;">
-                                      <option value="-">-</option>
+                                      {{-- <option value="-">-</option> --}}
                                           @foreach ( $jabatan as $item )
                                               <option data-id="{{$item->id}}" value="{{$item->jabatan}}">{{$item->jabatan}}</option>
                                           @endforeach
                                          
                                       </select>
+                                      
                                   @error('cc')
                                    <small style="color:red">- {{ $message}}</small>
                                   @enderror
@@ -121,14 +122,16 @@
                           <div class="row">
                               <div class="col-md-7">
                                   <div class="form-group">
-                                      <label for="penerima">User yang Menerima</label>
-                                      <select id="penerima" name="penerima[]" class="select2bs4" multiple="multiple" data-placeholder="Pilih Yang Di Input di Kepada dan Tembusan/CC"
+                                      <label for="penerima">Penerima Memo  <small><code>*Pilih Jabatan yang Sudah Di Masukkan Di <b>Form Kepada dan Tembusan</b></code></small></label>
+                                      <select name="penerima[]" class="select2bs4" multiple="multiple" data-placeholder="Pilih Yang Di Input di Kepada dan Tembusan/CC"
                                       style="width: 100%;">
                                           @foreach ( $user as $users )
                                               <option value="{{$users->jabatan_id}}">{{$users->Nama}} ({{$users->jabatan}})</option>
                                           @endforeach
                                          
                                       </select>
+                                     
+
                                       @error('penerima')
                                       <small style="color:red">- {{ $message}}</small>
                                       @enderror

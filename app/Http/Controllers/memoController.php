@@ -77,8 +77,14 @@ class memoController extends Controller
         $query = Auth::user()->nip;
         // $data1 = ['nip' => $query];
         $query_jabatan = Jabatan::whereNotIn('id',[$jabatanid,'admin'])->get();
-        $query_mengetahui = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->where('tb_user.level','kabag')->whereNotIn('tb_user.nip', [$query])->get();
-        $query_user = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->whereNotIn('tb_jabatan.id', [$jabatanid,'-','admin'])->get();
+        $query_mengetahui = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')
+                                    ->where('tb_user.level','kabag')
+                                    ->orWhere('tb_user.level','dirut')
+                                    ->whereNotIn('tb_user.nip', [$query])
+                                    ->get();
+        $query_user = User::join('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')
+                            ->whereNotIn('tb_jabatan.id', [$jabatanid,'-','admin'])
+                            ->get();
         // $query_bagian = User::leftJoin('tb_jabatan','tb_user.jabatan_id','=','tb_jabatan.id')->where('nip', $query)->get();
        
         $data2 = [
