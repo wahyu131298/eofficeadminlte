@@ -117,8 +117,8 @@ Route::group(['middleware' => ['auth','ceklogin:admin']], function(){
     
 });
 
-//Kabag
-Route::group(['middleware' => ['auth','ceklogin:kabag,admin']], function(){
+//Kabag dan Dirut
+Route::group(['middleware' => ['auth','ceklogin:kabag,admin,dirut']], function(){
     //Konfirmasi Memo
     Route::get('/konfir-memo','App\Http\Controllers\memoController@konfirm');
     //Terima

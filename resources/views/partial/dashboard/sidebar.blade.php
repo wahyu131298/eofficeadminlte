@@ -76,7 +76,7 @@
           </p>
         </a>
       </li>
-      @if (auth()->user()->level == 'kabag')
+      @if (auth()->user()->level == 'kabag' || auth()->user()->level == 'dirut')
       <li class="nav-item">
         <a href="/konfir-memo" class="nav-link @yield('konfirmasi')">
           <i class="nav-icon fas fa-solid fa-file-circle-check"></i>

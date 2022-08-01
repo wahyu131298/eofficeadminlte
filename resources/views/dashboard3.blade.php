@@ -114,7 +114,7 @@
         </div>
       </div>
       <!-- ./col -->
-      @if (auth()->user()->level == 'kabag' || auth()->user()->level == 'admin' )
+      @if (auth()->user()->level == 'kabag' || auth()->user()->level == 'admin' || auth()->user()->level == 'dirut')
       <div class="col-lg-3 col-6">
         <!-- small box -->
         <div class="small-box bg-success">

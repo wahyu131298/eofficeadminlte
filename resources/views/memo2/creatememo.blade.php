@@ -102,7 +102,7 @@
                            <div class="col-md-6">
                               
                               <div class="form-group">
-                                  <label for="cc">Tembusan <small><code>*Jika Tembusan KOSONG maka Isi / Pilih "-"</code></small></label>
+                                  <label for="cc">Tembusan <small><code>*Jika Tembusan KOSONG maka Isi atau Pilih "-"</code></small></label>
                                       <select id="cc" name="cc[]" class="select2bs4" multiple="multiple" data-placeholder="Tembusan / CC"
                                       style="width: 100%;">
                                       {{-- <option value="-">-</option> --}}
